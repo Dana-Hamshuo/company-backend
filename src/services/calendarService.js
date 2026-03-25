@@ -45,7 +45,7 @@ exports.getMonthCalendar = async(year,month,userId)=>{
         taskId:task._id,
         task:task.title,
         project:task.projectId.title,
-        client:task.projectId.clientId.name,
+        client:task.projectId?.clientId?.name || null,
         status:task.status,
         startTime:day.startTime,
         endTime:day.endTime,
