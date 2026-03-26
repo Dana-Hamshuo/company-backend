@@ -9,4 +9,6 @@ router.get("/",auth,clientController.getClients)
 
 router.delete("/:id",auth,clientController.deleteClient)
 
+router.patch("/:id", auth, clientController.updateClient)
+
 module.exports = router

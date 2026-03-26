@@ -41,3 +41,26 @@ exports.deleteClient = asyncHandler(async(req,res,next)=>{
    return success(res,"deleted client")
 
 });
+exports.updateClient = asyncHandler(async (req, res, next) => {
+
+  const clientId = req.params.id
+
+  if (!clientId) {
+    return res.status(400).json({ message: "clientId required" })
+  }
+
+  const { name, businessType, notes } = req.body
+
+  const client = await Client.findByIdAndUpdate(
+    clientId,
+    { name, businessType, notes },
+    { new: true }
+  )
+
+  if (!client) {
+    return res.status(404).json({ message: "client not found" })
+  }
+
+  return success(res, client, "client updated")
+
+})

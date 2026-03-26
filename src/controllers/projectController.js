@@ -51,3 +51,38 @@ exports.deleteProject = asyncHandler(async(req,res,next)=>{
    return success(res,"project deleted")
 
 });
+exports.updateProject = asyncHandler(async (req, res, next) => {
+
+  const projectId = req.params.id
+
+  const updates = {}
+
+  const allowedFields = [
+    "title",
+    "description",
+    "status",
+    "clientRating",
+    "clientFeedback"
+  ]
+
+  for (const key of allowedFields) {
+    if (req.body[key] !== undefined) {
+      updates[key] = req.body[key]
+    }
+  }
+
+  const project = await Project.findByIdAndUpdate(
+    projectId,
+    updates,
+    { new: true }
+  )
+
+  if (!project) {
+    return res.status(404).json({
+      message: "project not found"
+    })
+  }
+
+  return success(res, project, "project updated")
+
+})
