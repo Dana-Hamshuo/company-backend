@@ -1,8 +1,8 @@
 const calendarService = require("../services/calendarService")
 const { success } = require("../utils/apiResponse")
-exports.getMonth = async(req,res,next)=>{
+const asyncHandler = require("../utils/asyncHandler");
 
- try{
+exports.getMonth = asyncHandler(async(req,res,next)=>{
 
    const {year,month,userId} = req.query
 
@@ -14,8 +14,4 @@ exports.getMonth = async(req,res,next)=>{
 
    success(res, data,"Calendar fetched" )
 
- }catch(err){
-   next(err)
- }
-
-}
+});

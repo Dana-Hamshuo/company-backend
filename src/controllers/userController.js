@@ -1,62 +1,33 @@
-const User = require("../models/User")
-
-// ➕ create user
-
+//src/controllers/userController.js
 const authService = require("../services/authService")
 const { success } = require("../utils/apiResponse")
-
-// ➕ create user (WITHOUT register route - but with hashing)
-exports.createUser = async (req,res,next)=>{
-
- try{
-
+const User = require("../models/User")
+const asyncHandler = require("../utils/asyncHandler")
+exports.createUser = asyncHandler(async (req,res,next)=>{
    const user = await authService.register(req.body)
 
    return success(res, user, "user created", 201)
+});
+exports.getUsers = asyncHandler(async(req,res)=>{
 
- }catch(err){
-   next(err)
- }
+  const { page = 1, limit = 20 } = req.query
 
-}
+  const users = await User.find({ isActive: true })
+    .select("-password")
+    .skip((page - 1) * limit)
+    .limit(Number(limit))
 
-// 📄 get users
-exports.getUsers = async(req,res,next)=>{
-
- try{
-
-   const users = await User.find({isActive:true}).select("-password")
-
-   return success(res, users)
-
- }catch(err){
-   next(err)
- }
-
-}
-
-
-// 🗑 delete user
-exports.deleteUser = async(req,res,next)=>{
-
- try{
+  return success(res, users)
+})
+exports.deleteUser = asyncHandler(async(req,res,next)=>{
 
    const userId = req.params.id
 
    await User.findByIdAndDelete(userId)
 
    success(res, "User deleted")
-
- }catch(err){
-   next(err)
- }
-
-}
-
-exports.updateUser = async (req,res,next)=>{
-
-  try{
- 
+});
+exports.updateUser = asyncHandler(async (req,res,next)=>{
    const allowedFields = [
     "jobTitle",
     "allowOverlap",
@@ -84,14 +55,5 @@ exports.updateUser = async (req,res,next)=>{
      message:"user not found"
     })
    }
- 
-   res.json({
-    success:true,
-    user
-   })
- 
-  }catch(err){
-   next(err)
-  }
- 
- }
+    return success(res,"updated successfully")
+ });

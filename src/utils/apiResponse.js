@@ -1,3 +1,5 @@
+//src/utils/apiResponse.js
+
 exports.success = (res, data = null, message = "success", status = 200) => {
     return res.status(status).json({
       success: true,

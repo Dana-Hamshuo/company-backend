@@ -1,9 +1,9 @@
 const Project = require("../models/Project")
 const mongoose = require("mongoose")
-// ➕ create project
-exports.createProject = async(req,res,next)=>{
+const { success } = require("../utils/apiResponse")
+const asyncHandler = require("../utils/asyncHandler");
 
- try{
+exports.createProject = asyncHandler(async(req,res,next)=>{
 
    const {
      clientId,
@@ -26,48 +26,28 @@ exports.createProject = async(req,res,next)=>{
 
    })
 
-   res.status(201).json(project)
+   return success(res,project,"created project", 201)
 
- }catch(err){
-   next(err)
- }
+});
+exports.getProjects = asyncHandler(async (req, res, next) => {
 
-}
+  const { page = 1, limit = 20 } = req.query
 
+  const projects = await Project.find()
+    .populate("clientId", "name")
+    .populate("createdBy", "name")
+    .skip((page - 1) * limit)
+    .limit(Number(limit))
 
-// 📄 get projects
-exports.getProjects = async(req,res,next)=>{
+  return success(res, projects, "fetched projects")
 
- try{
-
-   const projects = await Project.find()
-   .populate("clientId","name")
-   .populate("createdBy","name")
-
-   res.json(projects)
-
- }catch(err){
-   next(err)
- }
-
-}
-
-
-// 🗑 delete project
-exports.deleteProject = async(req,res,next)=>{
-
- try{
+})
+exports.deleteProject = asyncHandler(async(req,res,next)=>{
 
    const id = req.params.id
 
    await Project.findByIdAndDelete(id)
 
-   res.json({
-     message:"project deleted"
-   })
+   return success(res,"project deleted")
 
- }catch(err){
-   next(err)
- }
-
-}
+});

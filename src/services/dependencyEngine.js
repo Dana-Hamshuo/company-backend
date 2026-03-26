@@ -2,6 +2,7 @@
 
 const Task = require("../models/Task")
 const {shiftSchedule} = require("../utils/schedule")
+const notificationService = require("./notificationService")
 
 exports.getInitialStatus = async(dependencies)=>{
 
@@ -30,6 +31,7 @@ exports.updateDependentTasks = async(taskId)=>{
       task.status = "pending"
       await task.save()
     }
+    await notificationService.notifyDependencyReady(task)
   }
 }
 

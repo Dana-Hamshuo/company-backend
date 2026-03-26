@@ -1,5 +1,7 @@
 const authService = require("../services/authService")
 const { success } = require("../utils/apiResponse")
+const asyncHandler = require("../utils/asyncHandler");
+
 exports.register = async (req, res, next) => {
 
   try {
@@ -17,9 +19,7 @@ exports.register = async (req, res, next) => {
 }
 
 
-exports.login = async (req, res, next) => {
-
-  try {
+exports.login = asyncHandler(async (req, res, next) => {
 
     const { email, password } = req.body
 
@@ -34,10 +34,4 @@ exports.login = async (req, res, next) => {
       }
     },"Login successful")
 
-  } catch (err) {
-
-    next(err)
-
-  }
-
-}
+});

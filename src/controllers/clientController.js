@@ -1,10 +1,7 @@
 const Client = require("../models/Client")
-
-// ➕ create client
-exports.createClient = async(req,res,next)=>{
-
- try{
-
+const { success } = require("../utils/apiResponse")
+const asyncHandler = require("../utils/asyncHandler");
+exports.createClient =asyncHandler(async(req,res,next)=>{
    const {name,businessType,notes} = req.body
 
    if(!name){
@@ -19,46 +16,28 @@ exports.createClient = async(req,res,next)=>{
      notes
    })
 
-   res.status(201).json(client)
+   return success(res, client, "client created", 201)
+});
+exports.getClients = asyncHandler(async (req, res, next) => {
 
- }catch(err){
-   next(err)
- }
+  const { page = 1, limit = 20 } = req.query
 
-}
+  const clients = await Client.find()
+    .skip((page - 1) * limit)
+    .limit(Number(limit))
 
+  return success(res, clients, "fetched clients")
 
-// 📄 get clients
-exports.getClients = async(req,res,next)=>{
-
- try{
-
-   const clients = await Client.find()
-
-   res.json(clients)
-
- }catch(err){
-   next(err)
- }
-
-}
-
-
-// 🗑 delete client
-exports.deleteClient = async(req,res,next)=>{
-
- try{
+})
+exports.deleteClient = asyncHandler(async(req,res,next)=>{
 
    const clientId = req.params.id
 
+   if(!mongoose.Types.ObjectId.isValid(clientId)){
+    return res.status(400).json({ message: "invalid id" })
+  }
    await Client.findByIdAndDelete(clientId)
+   
+   return success(res,"deleted client")
 
-   res.json({
-     message:"client deleted"
-   })
-
- }catch(err){
-   next(err)
- }
-
-}
+});

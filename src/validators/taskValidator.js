@@ -13,7 +13,7 @@ exports.validateSchedule = (schedule)=>{
 
   for(const day of schedule){
 
-    const dateObj = new Date(day.date) // ✅ FIX
+    const dateObj = new Date(day.date) 
 
     validateWorkDay(dateObj)
     validateWorkTime(day.startTime,day.endTime)
@@ -22,7 +22,7 @@ exports.validateSchedule = (schedule)=>{
       throw new Error("invalid time range")
     }
 
-    const key = toDateKey(dateObj) // ✅ FIX
+    const key = toDateKey(dateObj) 
 
     if(datesSet.has(key)){
       throw new Error("duplicate date in schedule")

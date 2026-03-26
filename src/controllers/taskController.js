@@ -1,14 +1,9 @@
 const Task = require("../models/Task")
 const taskService = require("../services/taskService")
 const { success } = require("../utils/apiResponse")
-/*
----------------------------------
-CREATE TASK
----------------------------------
-*/
-exports.createTask = async (req, res, next) => {
- try {
+const asyncHandler = require("../utils/asyncHandler");
 
+exports.createTask = asyncHandler(async (req, res, next) => {
   const { title, projectId, assignedUsers, schedule } = req.body
 
   if (!title || !projectId) {
@@ -27,74 +22,29 @@ exports.createTask = async (req, res, next) => {
 
   return success(res, task, "task created", 201)
 
- } catch (err) {
-  next(err)
- }
-}
-
-/*
----------------------------------
-COMPLETE TASK
----------------------------------
-*/
-exports.completeTask = async (req, res, next) => {
- try {
+});
+exports.completeTask = asyncHandler(async (req, res, next) => {
 
   const task = await taskService.completeTask(req.params.id)
 
-  res.json(task)
-
- } catch (err) {
-  next(err)
- }
-}
-
-/*
----------------------------------
-DELAY TASK
----------------------------------
-*/
-exports.delayTask = async (req, res, next) => {
- try {
-
-const task = await taskService.markTaskDelayed(
+  return success(res,tasks,"completed")
+});
+exports.delayTask = asyncHandler(async (req, res, next) => {
+ const task = await taskService.markTaskDelayed(
   req.params.id,
   req.body.reason,
-  req.body.customTime // ✅ جديد
+  req.body.customTime 
 )
+return success(res, task, "task delayed")
 
-  return success(res, task, "task delayed")
-
- } catch (err) {
-  next(err)
- }
-}
-
-/*
----------------------------------
-DELETE TASK
----------------------------------
-*/
-exports.deleteTask = async (req, res, next) => {
- try {
-
+});
+exports.deleteTask = asyncHandler(async (req, res, next) => {
   await taskService.deleteTask(req.params.id)
 
-  res.json({ message: "task deleted" })
+  return success(res,"task deleted") 
 
- } catch (err) {
-  next(err)
- }
-}
-
-/*
----------------------------------
-GET ALL TASKS
----------------------------------
-*/
-exports.getAllTasks = async (req,res,next)=>{
-    try{
-   
+});
+exports.getAllTasks = asyncHandler(async (req,res,next)=>{
      const {page=1,limit=20} = req.query
    
      const tasks = await Task.find()
@@ -106,20 +56,9 @@ exports.getAllTasks = async (req,res,next)=>{
      .lean()
    
      return success(res, tasks)
-   
-    }catch(err){
-     next(err)
-    }
-   }
+   });
 
-/*
----------------------------------
-GET TASKS BY USER
----------------------------------
-*/
-exports.getTasksByUser = async (req, res, next) => {
- try {
-
+exports.getTasksByUser = asyncHandler(async (req, res, next) => {
   const userId = req.params.userId
 
   const tasks = await Task.find({
@@ -132,25 +71,10 @@ exports.getTasksByUser = async (req, res, next) => {
       select: "name"
     }
   })
+return success(res,tasks)
+});
 
-  res.json({
-   success: true,
-   tasks
-  })
-
- } catch (err) {
-  next(err)
- }
-}
-
-/*
----------------------------------
-GET TASKS BY DATE RANGE (FIXED)
----------------------------------
-*/
-exports.getTasksByDateRange = async (req, res, next) => {
- try {
-
+exports.getTasksByDateRange = asyncHandler(async (req, res, next) => {
   const { start, end } = req.query
 
   if (!start || !end) {
@@ -165,48 +89,19 @@ exports.getTasksByDateRange = async (req, res, next) => {
     $lte: new Date(end)
    }
   })
+  return success(res,tasks)
+});
 
-  res.json({
-   success: true,
-   tasks
-  })
-
- } catch (err) {
-  next(err)
- }
-}
-
-/*
----------------------------------
-UPDATE TASK (SAFE)
----------------------------------
-*/
-exports.updateTask = async (req, res, next) => {
- try {
-
+exports.updateTask = asyncHandler(async (req, res, next) => {
   const task = await taskService.updateTaskSafe(
    req.params.id,
    req.body
   )
 
-  res.json({
-   success: true,
-   task
-  })
+  return success(res,"updated successfully")
 
- } catch (err) {
-  next(err)
- }
-}
-
-/*
----------------------------------
-GET TASK SCHEDULE (FIXED)
----------------------------------
-*/
-exports.getTaskSchedule = async (req, res, next) => {
- try {
-
+});
+exports.getTaskSchedule = asyncHandler(async (req, res, next) => {
   const task = await Task.findById(req.params.id)
 
   if (!task) {
@@ -215,12 +110,8 @@ exports.getTaskSchedule = async (req, res, next) => {
    })
   }
 
-  res.json({
-   task: task.title,
-   schedule: task.schedule
-  })
-
- } catch (err) {
-  next(err)
- }
-}
+  return success(res, {
+    task: task.title,
+    schedule: task.schedule
+},);
+});

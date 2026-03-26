@@ -18,11 +18,9 @@ exports.createTask = async(data,user)=>{
     schedule,
     dependencies
   } = data
-  // ✅ validation مفصول
-  validateCreateTask(data)
-  validateSchedule(schedule)
 
-  // ✅ conflict
+  validateCreateTask(data)
+  validateSchedule(schedule) 
   for(const member of assignedUsers){
 
     const dbUser = await User.findById(member.userId)
@@ -99,14 +97,14 @@ exports.completeTask = async(taskId)=>{
     const task = await Task.findById(taskId)
     if(!task) throw new Error("task not found")
   
-    // 🔥 نقل +24 ساعة
-    const newSchedule = task.schedule.map(day => ({
+
+      const newSchedule = task.schedule.map(day => ({
       date: addWorkingDay(day.date),
       startTime: customTime?.startTime || day.startTime,
       endTime: customTime?.endTime || day.endTime
     }))
   
-    // 🔴 تحقق conflict بعد التعديل
+
     for(const member of task.assignedUsers){
   
       const dbUser = await User.findById(member.userId)
@@ -122,16 +120,7 @@ exports.completeTask = async(taskId)=>{
         )
   
         if(conflict){
-
-          // 🔥 notification حتى لو فشل
-          await notificationService.notifyUsers(
-            [dbUser._id],
-            `Conflict while delaying task ${task.title}`,
-            "delay",
-            task._id,
-            { type:"conflict" }
-          )
-  
+          await notificationService.notifyTaskDelayed(task)
           throw new Error(`conflict after delay for ${dbUser.name}`)
         }
       }
@@ -160,8 +149,7 @@ exports.completeTask = async(taskId)=>{
       assignedUsers,
       schedule
     } = data
-  
-    // ✅ schedule update
+
     if(schedule){
   
       validateSchedule(schedule)
@@ -178,7 +166,7 @@ exports.completeTask = async(taskId)=>{
             day.date,
             day.startTime,
             day.endTime,
-            task._id // ✅ مهم
+            task._id 
           )
   
           if(conflict){

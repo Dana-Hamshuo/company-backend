@@ -9,7 +9,7 @@ exports.checkUserConflict = async(
  date,
  startTime,
  endTime,
- excludeTaskId = null // ✅ الجديد
+ excludeTaskId = null 
 )=>{
 
   
@@ -29,10 +29,10 @@ exports.checkUserConflict = async(
 
  for(const task of tasks){
 
-  // ✅ تجاهل نفس المهمة (أهم سطر)
+  
   if(excludeTaskId && task._id.equals(excludeTaskId)) continue
 
-  // ⚠️ مهم
+
   if(!task.schedule || task.schedule.length === 0) continue
 
   for(const day of task.schedule){

@@ -2,16 +2,12 @@ const express = require("express")
 const router = express.Router()
 
 const notificationController = require("../controllers/notificationController")
-const authMiddleware = require("../middlewares/authMiddleware")
-
-// 📄 get my notifications
+const authMiddleware = require("../middlewares/authMiddleware") 
 router.get(
   "/",
   authMiddleware,
   notificationController.getMyNotifications
-)
-
-// ✅ mark as read
+) 
 router.patch(
   "/:id/read",
   authMiddleware,
