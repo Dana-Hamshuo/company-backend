@@ -36,7 +36,7 @@ exports.createTask = async(data,user)=>{
       )
 
       if(conflict){
-        throw new Error(`conflict for ${dbUser.name}`)
+        throw new Error(`conflict for ${dbUser.jobTitle}`)
       }
     }
   }
