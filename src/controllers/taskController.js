@@ -27,7 +27,7 @@ exports.completeTask = asyncHandler(async (req, res, next) => {
 
   const task = await taskService.completeTask(req.params.id)
 
-  return success(res,tasks,"completed")
+  return success(res,task,"completed")
 });
 exports.delayTask = asyncHandler(async (req, res, next) => {
  const task = await taskService.markTaskDelayed(

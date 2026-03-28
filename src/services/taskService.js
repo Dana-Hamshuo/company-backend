@@ -119,9 +119,7 @@ exports.completeTask = async(taskId)=>{
           task._id
         )
   
-        if(conflict){
-          await notificationService.notifyTaskDelayed(task)
-          throw new Error(`conflict after delay for ${dbUser.name}`)
+        if(conflict){throw new Error(`conflict after delay for ${dbUser.name}`)
         }
       }
     }

@@ -2,12 +2,14 @@
 const User = require("../models/User")
 const Notification = require("../models/Notification")
 
-exports.notifyUsers = async(userIds, message, type, taskId, meta={})=>{
+exports.notifyUsers = async (userIds, message, type, taskId, meta = {}) => {
 
-  if(!userIds?.length) return
+  if (!userIds || userIds.length === 0) return
 
-  const notifications = userIds.map(id => ({
-    userId:id,
+  const uniqueUsers = [...new Set(userIds.map(id => id.toString()))]
+
+  const notifications = uniqueUsers.map(userId => ({
+    userId,
     message,
     type,
     taskId,
@@ -92,11 +94,11 @@ exports.notifyTaskDelayed = async (task) => {
 }
 exports.notifyDependencyReady = async (task) => {
 
-  const userIds = task.assignedUsers.map(u => u.userId)
+  const userIds = task.assignedUsers.map(u => u.userId.toString())
 
   await exports.notifyUsers(
     userIds,
-    `Task "${task.title}" is now ready to start`,
+    `You can now start task: ${task.title}`,
     "dependency",
     task._id
   )
