@@ -11,6 +11,7 @@ exports.createUser = asyncHandler(async (req,res,next)=>{
 
    return success(res, user, "user created", 201)
 });
+
 exports.getUsers = asyncHandler(async(req,res)=>{
 
   const features = new APIFeatures(User.find(), req.query)
