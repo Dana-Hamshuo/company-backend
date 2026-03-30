@@ -30,10 +30,7 @@ exports.markAsRead = asyncHandler(async (req, res) => {
   );
 
   if (!notification) {
-    return res.status(404).json({
-      success: false,
-      message: "Notification not found"
-    });
+    throw new AppError("Project not found", 404, "NOT_FOUND", "id");
   }
 
   return success(res, notification, "Marked as read");});

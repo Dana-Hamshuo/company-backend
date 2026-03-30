@@ -68,7 +68,7 @@ exports.updateUser = asyncHandler(async (req,res,next)=>{
    const user = await User.findById(req.params.id).select("-password")
  
    if (!user) {
-     return res.status(404).json({ message: "user not found" })
+    throw new AppError("User not found", 404, "NOT_FOUND", "id");
    }
  
    return success(res, user)

@@ -3,21 +3,10 @@ const { success } = require("../utils/apiResponse")
 const asyncHandler = require("../utils/asyncHandler");
 const AppError = require("../utils/AppError");
 
-exports.register = async (req, res, next) => {
-
-  try {
-
-    const user = await authService.register(req.body)
-
-    res.status(201).json(user)
-
-  } catch (err) {
-
-    next(err)
-
-  }
-
-}
+exports.register = asyncHandler(async (req, res) => {
+  const user = await authService.register(req.body);
+  return success(res, user, "user created", 201);
+});
 
 
 exports.login = asyncHandler(async (req, res, next) => {

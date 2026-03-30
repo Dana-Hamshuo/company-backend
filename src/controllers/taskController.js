@@ -8,16 +8,16 @@ const formatTask = require("../utils/formatTask");
 exports.createTask = asyncHandler(async (req, res, next) => {
   const { title, projectId, assignedUsers, schedule } = req.body
 
-  if (!title || !projectId) {
-   return res.status(400).json({
-    message: "title and projectId required"
-   })
+  if (!title) {
+    throw new AppError("Title is required", 400, "VALIDATION_ERROR", "title");
+  }
+  
+  if (!projectId) {
+    throw new AppError("ProjectId is required", 400, "VALIDATION_ERROR", "projectId");
   }
 
   if (!schedule || !schedule.length) {
-   return res.status(400).json({
-    message: "schedule required"
-   })
+    throw new AppError("Schedule is required", 400, "VALIDATION_ERROR", "schedule");
   }
 
   const task = await taskService.createTask(req.body, req.user)
@@ -104,10 +104,12 @@ return success(res,tasks)
 exports.getTasksByDateRange = asyncHandler(async (req, res, next) => {
   const { start, end } = req.query
 
-  if (!start || !end) {
-   return res.status(400).json({
-    message: "start and end required"
-   })
+  if (!start) {
+    throw new AppError("Start date is required", 400, "VALIDATION_ERROR", "start");
+  }
+  
+  if (!end) {
+    throw new AppError("End date is required", 400, "VALIDATION_ERROR", "end");
   }
 
   const tasks = await Task.find({
@@ -132,9 +134,7 @@ exports.getTaskSchedule = asyncHandler(async (req, res, next) => {
   const task = await Task.findById(req.params.id)
 
   if (!task) {
-   return res.status(404).json({
-    message: "task not found"
-   })
+    throw new AppError("Task not found", 404, "NOT_FOUND", "id");
   }
 
   return success(res, formatTask(task),"success");

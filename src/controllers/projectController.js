@@ -81,9 +81,7 @@ exports.updateProject = asyncHandler(async (req, res, next) => {
   )
 
   if (!project) {
-    return res.status(404).json({
-      message: "project not found"
-    })
+    throw new AppError("Project not found", 404, "NOT_FOUND", "id");
   }
 
   return success(res, project, "project updated")
@@ -96,10 +94,7 @@ exports.getProjectById = asyncHandler(async (req, res) => {
     .populate("createdBy", "name role")
 
   if (!project) {
-    return res.status(404).json({
-      success: false,
-      message: "Project not found"
-    })
+    throw new AppError("Project not found", 404, "NOT_FOUND", "id");
   }
 
   return success(res, project, "Project fetched successfully")
