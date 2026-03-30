@@ -14,22 +14,13 @@ exports.createUser = asyncHandler(async (req,res,next)=>{
 
 exports.getUsers = asyncHandler(async(req,res)=>{
 
-  const users = await User.find()
-    .skip((page - 1) * limit)
-    .limit(limit);
+  const users = await User.find(); 
 
-  res.status(200).json({   
+res.status(200).json({  
     success: true,
-    page,
-    limit,
-    data: users
-  });
+    data: users});
 
-  return success(res, users, "Users fetched", {
-    page: features.pagination.page,
-    limit: features.pagination.limit
-  });
-})
+return success(res, users, "Users fetched")})
 exports.deleteUser = asyncHandler(async(req,res,next)=>{
 
    const userId = req.params.id
