@@ -53,8 +53,16 @@ exports.updateClient = asyncHandler(async (req, res, next) => {
     return res.status(400).json({ message: "clientId required" })
   }
 
-  const { name, businessType, notes } = req.body
+  const { name, businessType, notes } = req.body || {}
 
+  if (!req.body || Object.keys(req.body).length === 0) {
+    throw new AppError(
+      "Request body is required",
+      400,
+      "VALIDATION_ERROR"
+    )
+  }
+  
   const client = await Client.findByIdAndUpdate(
     clientId,
     { name, businessType, notes },
