@@ -4,6 +4,7 @@ const { success } = require("../utils/apiResponse")
 const User = require("../models/User")
 const asyncHandler = require("../utils/asyncHandler")
 const APIFeatures = require("../utils/apiFeatures");
+const AppError = require("../utils/AppError");
 
 exports.createUser = asyncHandler(async (req,res,next)=>{
    const user = await authService.register(req.body)

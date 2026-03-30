@@ -2,12 +2,13 @@
 const Notification = require("../models/Notification");
 const { success } = require("../utils/apiResponse")
 const asyncHandler = require("../utils/asyncHandler");
+const AppError = require("../utils/AppError");
 
 exports.getMyNotifications = asyncHandler(async (req, res) => {
   const notifications = await Notification.find({
     userId: req.user._id
   }).sort({ createdAt: -1 });
-  
+
    return success(res,notifications)
 });
 

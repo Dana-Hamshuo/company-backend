@@ -1,6 +1,7 @@
 const authService = require("../services/authService")
 const { success } = require("../utils/apiResponse")
 const asyncHandler = require("../utils/asyncHandler");
+const AppError = require("../utils/AppError");
 
 exports.register = async (req, res, next) => {
 

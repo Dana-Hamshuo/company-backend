@@ -1,6 +1,7 @@
 //src/services/notificationService.js
 const User = require("../models/User")
 const Notification = require("../models/Notification")
+const AppError = require("../utils/AppError");
 
 exports.notifyUsers = async (userIds, message, type, taskId, meta = {}) => {
 
