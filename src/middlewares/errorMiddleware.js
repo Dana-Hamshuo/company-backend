@@ -59,11 +59,11 @@ module.exports = (err, req, res, next) => {
 
   res.status(statusCode).json({
     success: false,
-    message: customError.message || "Something went wrong",
+    message: customError.message,
     error: {
-      type: customError.type || "SERVER_ERROR",
-      field: customError.field || null,
-      details: customError.message
+      type: customError.type,
+      field: customError.field,
+      details: customError.details || customError.message
     }
   });
 };

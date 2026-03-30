@@ -1,21 +1,25 @@
 //src/middlewares/validationMiddleware.js
 
 const { validationResult } = require("express-validator");
+const AppError = require("../utils/AppError");
 
-module.exports = (req,res,next)=>{
+module.exports = (req, res, next) => {
 
-  const errors = validationResult(req)
+  const errors = validationResult(req);
 
-  if(!errors.isEmpty()){
-    return res.status(400).json({
-      success:false,
-      message:"Validation failed",
-      error:{
-        type:"VALIDATION_ERROR",
-        details:errors.array()
-      }
-    })
+  if (!errors.isEmpty()) {
+
+    const first = errors.array()[0];
+
+    return next(
+      new AppError(
+        first.msg,
+        400,
+        "VALIDATION_ERROR",
+        first.param
+      )
+    );
   }
 
-  next()
-}
+  next();
+};

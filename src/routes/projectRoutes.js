@@ -2,9 +2,15 @@ const router = require("express").Router()
 
 const projectController = require("../controllers/projectController")
 const auth = require("../middlewares/authMiddleware")
+const { createProjectValidation } = require("../validators/project/project.validation");
 
-router.post("/",auth,projectController.createProject)
-
+router.post(
+  "/",
+  auth,
+  createProjectValidation,
+  validate,
+  projectController.createProject
+);
 router.get("/",auth,projectController.getProjects)
 
 router.delete("/:id",auth,projectController.deleteProject)

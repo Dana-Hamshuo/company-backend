@@ -4,7 +4,16 @@ const taskController = require("../controllers/taskController")
 
 const auth = require("../middlewares/authMiddleware")
 
-router.post("/",auth,taskController.createTask)
+const { createTaskValidation } = require("../validators/task/createTask.validation");
+const validate = require("../middlewares/validationMiddleware");
+
+router.post(
+    "/",
+    auth,
+    createTaskValidation,
+    validate,
+    taskController.createTask
+  );
 
 router.post("/:id/delay",auth,taskController.delayTask)
 

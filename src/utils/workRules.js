@@ -12,7 +12,12 @@ exports.validateWorkTime = (startTime,endTime)=>{
  const workEnd = toMinutes("15:00")
 
  if(start < workStart || end > workEnd){
-  throw new Error("outside working hours")
+  throw new AppError(
+    "Outside working hours",
+    400,
+    "BUSINESS_ERROR",
+    "schedule"
+  )
  }
 
  if(start >= end){

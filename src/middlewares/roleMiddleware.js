@@ -11,12 +11,12 @@ exports.requireScheduler = (req, res, next) => {
 };
 
 exports.allowRoles = (...roles)=>{
-  return (req,res,next)=>{
-   if(!roles.includes(req.user.role)){
-    return res.status(403).json({
-     message:"forbidden"
-    })
-   }
-   next()
-  }
+  return res.status(403).json({
+    success: false,
+    message: "Forbidden",
+    error: {
+      type: "AUTH_ERROR",
+      field: "role"
+    }
+  })
  }
