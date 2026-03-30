@@ -73,7 +73,14 @@ exports.getMonthCalendar = async (year, month, userId, filters = {}) => {
     });
   }
 
-  return calendar;
+  const result = Object.keys(calendar).map(date => ({
+    date,
+    tasks: calendar[date]
+  }));
+  
+  result.sort((a, b) => new Date(a.date) - new Date(b.date));
+  
+  return result;
 };
 
 exports.getUserDayTasks = async(userId,date)=>{
