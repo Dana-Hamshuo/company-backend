@@ -35,7 +35,7 @@ exports.updateDependentTasks = async(taskId)=>{
   }
 }
 
-exports.propagateDelay = async(taskId)=>{
+exports.propagateDelay = async (taskId, custom = {})=>{
 
   const dependents = await Task.find({dependencies:taskId})
 

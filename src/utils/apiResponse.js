@@ -8,9 +8,10 @@ exports.success = (res, data = null, message = "success", status = 200) => {
     })
   }
   
-  exports.error = (res, message = "error", status = 500) => {
+  exports.error = (res, message = "error", status = 500, errors = null) => {
     return res.status(status).json({
       success: false,
-      message
+      message,
+      errors
     })
   }

@@ -73,7 +73,7 @@ exports.completeTask = async(taskId)=>{
    
     eventBus.emit("task.completed", task)
 
-    await dependencyEngine.updateDependentTasks(taskId)
+    await dependencyEngine.propagateDelay(taskId, custom)
    
     return task
    
@@ -92,17 +92,26 @@ exports.completeTask = async(taskId)=>{
     await Task.findByIdAndDelete(taskId)
   }
 
-  exports.markTaskDelayed = async(taskId, reason, customTime=null)=>{
+  exports.markTaskDelayed = async(taskId, reason, custom = {})=>{
 
     const task = await Task.findById(taskId)
     if(!task) throw new Error("task not found")
   
 
-      const newSchedule = task.schedule.map(day => ({
-      date: addWorkingDay(day.date),
-      startTime: customTime?.startTime || day.startTime,
-      endTime: customTime?.endTime || day.endTime
-    }))
+      const newSchedule = task.schedule.map(day => {
+        let newDate = day.date
+        if (custom.customDate) {
+          newDate = new Date(custom.customDate)
+        } else {
+          newDate = addWorkingDay(day.date)
+        }
+        return {
+          date: newDate,
+          startTime: custom.customTime?.startTime || day.startTime,
+          endTime: custom.customTime?.endTime || day.endTime
+        }
+      })
+    
   
 
     for(const member of task.assignedUsers){

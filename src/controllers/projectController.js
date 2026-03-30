@@ -86,3 +86,19 @@ exports.updateProject = asyncHandler(async (req, res, next) => {
   return success(res, project, "project updated")
 
 })
+exports.getProjectById = asyncHandler(async (req, res) => {
+
+  const project = await Project.findById(req.params.id)
+    .populate("clientId", "name businessType")
+    .populate("createdBy", "name role")
+
+  if (!project) {
+    return res.status(404).json({
+      success: false,
+      message: "Project not found"
+    })
+  }
+
+  return success(res, project, "Project fetched successfully")
+
+})

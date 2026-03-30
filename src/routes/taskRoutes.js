@@ -10,11 +10,11 @@ router.post("/:id/delay",auth,taskController.delayTask)
 
 router.get("/",auth,taskController.getAllTasks)
 
-router.get("/user/:userId",auth,taskController.getTasksByUser)
+router.get("/user/:userId", auth, taskController.getTasksByUser)
 
-router.get("/range",auth,taskController.getTasksByDateRange)
+router.get("/range", auth, taskController.getTasksByDateRange)
 
-router.get("/:id/schedule", auth, taskController.getTaskSchedule)
+router.get("/:id", auth, taskController.getTaskSchedule)
 
 router.patch( "/:id",auth,taskController.updateTask)
 
