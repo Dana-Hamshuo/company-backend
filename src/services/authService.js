@@ -49,35 +49,53 @@ const user = await User.create({
 
 exports.login = async (email, password) => {
 
+  if (!email) {
+    throw new AppError(
+      "Email is required",
+      400,
+      "VALIDATION_ERROR",
+      "email"
+    );
+  }
+
+  if (!password) {
+    throw new AppError(
+      "Password is required",
+      400,
+      "VALIDATION_ERROR",
+      "password"
+    );
+  }
+
   const normalizedEmail = email.trim().toLowerCase();
 
-  const user = await User.findOne({ email: normalizedEmail })
+  const user = await User.findOne({ email: normalizedEmail });
 
   if (!user) {
-    throw new Error("Invalid credentials")
+    throw new AppError(
+      "User not found",
+      404,
+      "NOT_FOUND",
+      "email"
+    );
   }
 
-  const isMatch = await bcrypt.compare(password, user.password)
+  const isMatch = await bcrypt.compare(password, user.password);
 
   if (!isMatch) {
-    throw new Error("Invalid credentials")
+    throw new AppError(
+      "Incorrect password",
+      401,
+      "AUTH_ERROR",
+      "password"
+    );
   }
-  
+
   const token = jwt.sign(
     { id: user._id },
     process.env.JWT_SECRET,
     { expiresIn: "7d" }
-  )
+  );
 
-  const safeUser = {
-    _id: user._id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    jobTitle: user.jobTitle,
-    allowOverlap: user.allowOverlap,
-    maxParallelTasks: user.maxParallelTasks
-  }
-
-  return { user: safeUser, token }
-}
+  return { user, token };
+};

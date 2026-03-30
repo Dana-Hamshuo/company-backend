@@ -3,6 +3,8 @@ const authService = require("../services/authService")
 const { success } = require("../utils/apiResponse")
 const User = require("../models/User")
 const asyncHandler = require("../utils/asyncHandler")
+const APIFeatures = require("../utils/apiFeatures");
+
 exports.createUser = asyncHandler(async (req,res,next)=>{
    const user = await authService.register(req.body)
 
@@ -10,14 +12,18 @@ exports.createUser = asyncHandler(async (req,res,next)=>{
 });
 exports.getUsers = asyncHandler(async(req,res)=>{
 
-  const { page = 1, limit = 20 } = req.query
+  const features = new APIFeatures(User.find(), req.query)
+    .filter()
+    .search(["name", "email"])
+    .sort()
+    .paginate();
 
-  const users = await User.find({ isActive: true })
-    .select("-password")
-    .skip((page - 1) * limit)
-    .limit(Number(limit))
+  const users = await features.query;
 
-  return success(res, users)
+  return success(res, users, "Users fetched", {
+    page: features.pagination.page,
+    limit: features.pagination.limit
+  });
 })
 exports.deleteUser = asyncHandler(async(req,res,next)=>{
 
