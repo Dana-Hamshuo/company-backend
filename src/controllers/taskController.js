@@ -29,7 +29,7 @@ exports.completeTask = asyncHandler(async (req, res, next) => {
 
   const task = await taskService.completeTask(req.params.id)
 
-  return success(res,task,"completed")
+  return success(res,formatTask(task),"completed")
 });
 exports.delayTask = asyncHandler(async (req, res, next) => {
  const task = await taskService.markTaskDelayed(
@@ -37,7 +37,7 @@ exports.delayTask = asyncHandler(async (req, res, next) => {
   req.body.reason,
   req.body 
 )
-return success(res, task, "task delayed")
+return success(res, formatTask(task), "task delayed")
 
 });
 exports.deleteTask = asyncHandler(async (req, res, next) => {
@@ -137,8 +137,5 @@ exports.getTaskSchedule = asyncHandler(async (req, res, next) => {
    })
   }
 
-  return success(res, {
-    task: task.title,
-    schedule: task.schedule
-},);
+  return success(res, formatTask(task),"success");
 });
