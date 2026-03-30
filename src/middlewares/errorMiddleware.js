@@ -6,9 +6,7 @@ module.exports = (err, req, res, next) => {
   console.error("ERROR 💥:", err);
 
   let customError = err;
-
-  // 🔥 Mongoose Validation Error (enum, required...)
-  if (err.name === "ValidationError") {
+    if (err.name === "ValidationError") {
     const firstError = Object.values(err.errors)[0];
 
     customError = new AppError(

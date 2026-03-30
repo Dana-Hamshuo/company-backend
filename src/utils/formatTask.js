@@ -7,7 +7,7 @@ function formatTask(task) {
       status: task.status,
       progress: task.progress,
       assignedUsers: task.assignedUsers.map(user => ({
-        id: user.userId._id || user.userId,  // لو populated userId
+        id: user.userId._id || user.userId,  
         name: user.userId.name || "Unknown"
       })),
       dependencies: task.dependencies || [],
