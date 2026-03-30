@@ -3,6 +3,7 @@ const taskService = require("../services/taskService")
 const { success } = require("../utils/apiResponse")
 const asyncHandler = require("../utils/asyncHandler");
 const AppError = require("../utils/AppError")
+const formatTask = require("../utils/formatTask");
 
 exports.createTask = asyncHandler(async (req, res, next) => {
   const { title, projectId, assignedUsers, schedule } = req.body
@@ -21,7 +22,7 @@ exports.createTask = asyncHandler(async (req, res, next) => {
 
   const task = await taskService.createTask(req.body, req.user)
 
-  return success(res, task, "task created", 201)
+  return success(res,"task created",formatTask(task) ,201)
 
 });
 exports.completeTask = asyncHandler(async (req, res, next) => {
