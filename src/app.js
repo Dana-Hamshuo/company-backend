@@ -5,7 +5,7 @@ dotenv.config()
 
 const app = express()
 
-app.use(express.json())
+
 require("./events/taskEvents")
 const authRoutes = require("./routes/authRoutes")
 const userRoutes = require("./routes/userRoutes")
@@ -25,13 +25,15 @@ app.use("/api/calendar",calendarRoutes)
 app.use("/api/admin",adminRoutes)
 app.use("/api/notifications", notificationRoutes)
 
-res.status(404).json({
-    success: false,
-    message: "Route not found",
-    error: {
-      type: "ROUTE_ERROR",
-      details: `${req.method} ${req.originalUrl} not found`
-    }
+app.use((req, res) => {
+    res.status(404).json({
+      success: false,
+      message: "Route not found",
+      error: {
+        type: "ROUTE_ERROR",
+        details: `${req.method} ${req.originalUrl} not found`
+      }
+    })
   })
 const errorMiddleware = require("./middlewares/errorMiddleware")
 
