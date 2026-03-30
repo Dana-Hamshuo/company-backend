@@ -3,35 +3,28 @@ const mongoose = require("mongoose")
 const {validateWorkDay, validateWorkTime} = require("../utils/workRules")
 const {toDateKey} = require("../utils/dateFormat")
 
-exports.validateSchedule = (schedule)=>{
-
-  if(!schedule?.length){
-    throw new Error("schedule required")
+exports.validateSchedule = (schedule) => {
+  if (!schedule?.length) {
+    throw new AppError("schedule required", 400, "VALIDATION_ERROR", null);
   }
 
-  const datesSet = new Set()
+  const datesSet = new Set();
 
-  for(const day of schedule){
+  for (const day of schedule) {
+    const dateObj = new Date(day.date);
 
-    const dateObj = new Date(day.date) 
+    validateWorkDay(dateObj);
 
-    validateWorkDay(dateObj)
-    validateWorkTime(day.startTime,day.endTime)
+    validateWorkTime(day.startTime, day.endTime);
 
-    if(day.startTime >= day.endTime){
-      throw new Error("invalid time range")
+    const key = toDateKey(dateObj);
+    if (datesSet.has(key)) {
+      throw new AppError("duplicate date in schedule", 400, "VALIDATION_ERROR", null);
     }
 
-    const key = toDateKey(dateObj) 
-
-    if(datesSet.has(key)){
-      throw new Error("duplicate date in schedule")
-    }
-
-    datesSet.add(key)
+    datesSet.add(key);
   }
-
-}
+};
 exports.validateCreateTask = (data)=>{
 
     const {

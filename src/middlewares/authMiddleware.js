@@ -41,3 +41,17 @@ module.exports = async (req, res, next) => {
 
     next(new AppError("Unauthorized", 401, "AUTH_ERROR"))
   }}
+  exports.authorizeScheduler = (req, res, next) => {
+    if (req.user.role !== "scheduler") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied: scheduler only",
+        error: {
+          type: "AUTH_ERROR",
+          field: null,
+          details: "Only scheduler can perform this action"
+        }
+      });
+    }
+    next();
+  };

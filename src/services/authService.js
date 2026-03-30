@@ -16,25 +16,44 @@ exports.register = async (data) => {
     maxParallelTasks
   } = data
 
-  const normalizedEmail = email.trim().toLowerCase();
+  if (!name || !name.trim()) {
+    throw new AppError("Name is required", 400, "VALIDATION_ERROR", "name");
+  }
 
-  const existing = await User.findOne({ email: normalizedEmail })
+  if (!email || !email.trim()) {
+    throw new AppError("Email is required", 400, "VALIDATION_ERROR", "email");
+  }
 
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    throw new AppError("Invalid email format", 400, "VALIDATION_ERROR", "email");
+  }
+
+  if (!password) {
+    throw new AppError("Password is required", 400, "VALIDATION_ERROR", "password");
+  }
+
+  if (password.length < 6) {
+    throw new AppError("Password must be at least 6 characters", 400, "VALIDATION_ERROR", "password");
+  }
+
+const normalizedEmail = email.trim().toLowerCase();
+ const existing = await User.findOne({ email: normalizedEmail })
   if (existing) {
-    throw new Error("User already exists")
+    throw new AppError("User already exists", 409, "ALREADY_EXISTS", "email");
   }
 
   const hashed = await bcrypt.hash(password, 10)
 
-const user = await User.create({
-  name,
-  email: normalizedEmail,
-  password: hashed,
-  role,
-  jobTitle,
-  allowOverlap,
-  maxParallelTasks
-})
+  const user = await User.create({
+    name: name.trim(),
+    email: normalizedEmail,
+    password: hashed,
+    role,
+    jobTitle,
+    allowOverlap,
+    maxParallelTasks
+  })
 
   return {
     _id: user._id,
@@ -46,6 +65,9 @@ const user = await User.create({
     maxParallelTasks: user.maxParallelTasks
   }
 }
+
+
+
 
 
 exports.login = async (email, password) => {
