@@ -7,11 +7,11 @@ module.exports = (err, req, res, next) => {
 
   res.status(statusCode).json({
     success: false,
-    message: err.message || "Internal Server Error",
+    message: err.message || "Something went wrong",
     error: {
       type: err.type || "SERVER_ERROR",
       field: err.field || null,
-      details: err.message
+      details: err.details || err.message
     }
-  })
+  });
 }
