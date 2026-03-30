@@ -47,9 +47,7 @@ exports.register = async (data) => {
 
 exports.login = async (email, password) => {
 
-const normalizedEmail = email.trim().toLowerCase();
-
-const user = await User.findOne({ email: normalizedEmail });
+  const user = await User.findOne({ email })
 
   if (!user) {
     return res.status(401).json({
@@ -66,7 +64,7 @@ const user = await User.findOne({ email: normalizedEmail });
       message: "Invalid credentials"
     })
   }
-
+  
   const token = jwt.sign(
     { id: user._id },
     process.env.JWT_SECRET,
@@ -85,9 +83,3 @@ const user = await User.findOne({ email: normalizedEmail });
 
   return { user: safeUser, token }
 }
-const normalizedEmail = req.body.email.trim().toLowerCase();
-
-const user = await User.create({
-  ...req.body,
-  email: normalizedEmail
-});
