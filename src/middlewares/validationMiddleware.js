@@ -9,10 +9,13 @@ module.exports = (req,res,next)=>{
   if(!errors.isEmpty()){
     return res.status(400).json({
       success:false,
-      errors:errors.array()
+      message:"Validation failed",
+      error:{
+        type:"VALIDATION_ERROR",
+        details:errors.array()
+      }
     })
   }
 
   next()
-
 }

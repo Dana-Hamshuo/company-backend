@@ -25,6 +25,14 @@ app.use("/api/calendar",calendarRoutes)
 app.use("/api/admin",adminRoutes)
 app.use("/api/notifications", notificationRoutes)
 
+res.status(404).json({
+    success: false,
+    message: "Route not found",
+    error: {
+      type: "ROUTE_ERROR",
+      details: `${req.method} ${req.originalUrl} not found`
+    }
+  })
 const errorMiddleware = require("./middlewares/errorMiddleware")
 
 app.use(errorMiddleware)

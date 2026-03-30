@@ -1,14 +1,18 @@
 const Client = require("../models/Client")
 const { success } = require("../utils/apiResponse")
 const asyncHandler = require("../utils/asyncHandler");
+const AppError = require("../utils/AppError")
 exports.createClient =asyncHandler(async(req,res,next)=>{
    const {name,businessType,notes} = req.body
 
    if(!name){
-     return res.status(400).json({
-       message:"name is required"
-     })
-   }
+    throw new AppError(
+      "Name is required",
+      400,
+      "VALIDATION_ERROR",
+      "name"
+    )
+  }
 
    const client = await Client.create({
      name,

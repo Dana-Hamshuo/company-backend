@@ -2,6 +2,7 @@ const Project = require("../models/Project")
 const mongoose = require("mongoose")
 const { success } = require("../utils/apiResponse")
 const asyncHandler = require("../utils/asyncHandler");
+const AppError = require("../utils/AppError")
 
 exports.createProject = asyncHandler(async(req,res,next)=>{
 
@@ -12,12 +13,14 @@ exports.createProject = asyncHandler(async(req,res,next)=>{
    } = req.body
 
    if(!mongoose.Types.ObjectId.isValid(clientId)){
-    return res.status(400).json({
-      message:"invalid clientId"
-    })
+    throw new AppError(
+      "Invalid clientId",
+      400,
+      "VALIDATION_ERROR",
+      "clientId"
+    )
   }
-
-   const project = await Project.create({
+  const project = await Project.create({
 
      clientId,
      title,

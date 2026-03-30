@@ -3,6 +3,8 @@
 const jwt = require("jsonwebtoken")
 const User = require("../models/User")
 
+const AppError = require("../utils/AppError")
+
 module.exports = async (req, res, next) => {
 
   try {
@@ -10,10 +12,12 @@ module.exports = async (req, res, next) => {
     const header = req.headers.authorization
 
     if (!header || !header.startsWith("Bearer ")) {
-      return res.status(401).json({
-       message: "Invalid token format"
-      })
-     }
+      throw new AppError(
+        "Invalid token format",
+        401,
+        "AUTH_ERROR"
+      )
+    }
 
     const token = header.split(" ")[1]
 
@@ -22,11 +26,11 @@ module.exports = async (req, res, next) => {
     const user = await User.findById(decoded.id)
 
     if (!user) {
-
-      return res.status(401).json({
-        message: "Invalid token"
-      })
-
+      throw new AppError(
+        "Invalid token",
+        401,
+        "AUTH_ERROR"
+      )
     }
 
     req.user = user
@@ -35,10 +39,5 @@ module.exports = async (req, res, next) => {
 
   } catch (err) {
 
-    res.status(401).json({
-      message: "Unauthorized"
-    })
-
-  }
-
-}
+    next(new AppError("Unauthorized", 401, "AUTH_ERROR"))
+  }}
