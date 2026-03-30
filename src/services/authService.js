@@ -47,16 +47,24 @@ exports.register = async (data) => {
 
 exports.login = async (email, password) => {
 
-  const user = await User.findOne({ email })
+const normalizedEmail = email.trim().toLowerCase();
+
+const user = await User.findOne({ email: normalizedEmail });
 
   if (!user) {
-    throw new Error("Invalid credentials")
+    return res.status(401).json({
+      success: false,
+      message: "Invalid credentials"
+    })
   }
-
-  const match = await bcrypt.compare(password, user.password)
-
-  if (!match) {
-    throw new Error("Invalid credentials")
+  
+  const isMatch = await bcrypt.compare(password, user.password)
+  
+  if (!isMatch) {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid credentials"
+    })
   }
 
   const token = jwt.sign(
@@ -77,3 +85,9 @@ exports.login = async (email, password) => {
 
   return { user: safeUser, token }
 }
+const normalizedEmail = req.body.email.trim().toLowerCase();
+
+const user = await User.create({
+  ...req.body,
+  email: normalizedEmail
+});
