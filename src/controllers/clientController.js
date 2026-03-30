@@ -2,6 +2,7 @@ const Client = require("../models/Client")
 const { success } = require("../utils/apiResponse")
 const asyncHandler = require("../utils/asyncHandler");
 const AppError = require("../utils/AppError")
+const mongoose = require("mongoose")
 exports.createClient =asyncHandler(async(req,res,next)=>{
    const {name,businessType,notes} = req.body
 
@@ -62,7 +63,7 @@ exports.updateClient = asyncHandler(async (req, res, next) => {
       "VALIDATION_ERROR"
     )
   }
-  
+
   const client = await Client.findByIdAndUpdate(
     clientId,
     { name, businessType, notes },
