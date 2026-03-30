@@ -4,8 +4,7 @@ const dotenv = require("dotenv")
 dotenv.config()
 
 const app = express()
-
-
+app.use(express.json())
 require("./events/taskEvents")
 const authRoutes = require("./routes/authRoutes")
 const userRoutes = require("./routes/userRoutes")
