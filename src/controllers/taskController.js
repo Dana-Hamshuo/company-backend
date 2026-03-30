@@ -22,7 +22,7 @@ exports.createTask = asyncHandler(async (req, res, next) => {
 
   const task = await taskService.createTask(req.body, req.user)
 
-  return success(res,"task created",formatTask(task) ,201)
+  return success(res,formatTask(task),"task created" ,201)
 
 });
 exports.completeTask = asyncHandler(async (req, res, next) => {
@@ -46,20 +46,45 @@ exports.deleteTask = asyncHandler(async (req, res, next) => {
   return success(res,"task deleted") 
 
 });
-exports.getAllTasks = asyncHandler(async (req,res,next)=>{
-     const {page=1,limit=20} = req.query
-   
-     const tasks = await Task.find()
-     .select("title status schedule projectId assignedUsers")
-     .populate("projectId","title")
-     .populate("assignedUsers.userId","name")
-     .skip((page-1)*limit)
-     .limit(Number(limit))
-     .lean()
-   
-     return success(res, tasks)
-   });
+exports.getAllTasks = asyncHandler(async (req, res, next) => {
+  const { page = 1, limit = 20 } = req.query;
 
+  const tasks = await Task.find()
+    .select("title status schedule projectId assignedUsers dependencies")
+    .populate("projectId", "title")           
+    .populate("assignedUsers.userId", "name")  
+    .skip((page - 1) * limit)
+    .limit(Number(limit))
+    .lean();
+
+  const formattedTasks = tasks.map(task => ({
+    taskId: task._id,
+    title: task.title,
+    status: task.status,
+    project: task.projectId
+      ? {
+          projectId: task.projectId._id,
+          title: task.projectId.title
+        }
+      : null,
+    assignedUsers: task.assignedUsers.map(u => ({
+      userId: u.userId._id,
+      name: u.userId.name
+    })),
+    schedule: task.schedule.map(s => ({
+      date: s.date.toISOString().split("T")[0],
+      startTime: s.startTime,
+      endTime: s.endTime
+    })),
+    dependencies: task.dependencies || []
+  }));
+
+  return res.status(200).json({
+    success: true,
+    message: "success",
+    data: formattedTasks
+  });
+});
 exports.getTasksByUser = asyncHandler(async (req, res, next) => {
   const userId = req.params.userId
 

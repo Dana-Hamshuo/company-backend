@@ -73,7 +73,7 @@ exports.completeTask = async(taskId)=>{
    
     eventBus.emit("task.completed", task)
 
-    await dependencyEngine.propagateDelay(taskId, custom)
+    await dependencyEngine.propagateDelay(taskId)
    
     return task
    
@@ -141,7 +141,7 @@ exports.completeTask = async(taskId)=>{
   
     eventBus.emit("task.delayed", task)
   
-    await dependencyEngine.propagateDelay(taskId)
+    await dependencyEngine.propagateDelay(taskId,custom)
   
     return task
   }
