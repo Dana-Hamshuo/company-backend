@@ -10,12 +10,38 @@ exports.getMyNotifications = asyncHandler(async (req, res) => {
    return success(res,notifications)
 });
 
-exports.markAsRead =asyncHandler(async (req, res) => {
-  await Notification.findByIdAndUpdate(req.params.id, {
-    isRead: true
+exports.markAsRead = asyncHandler(async (req, res) => {
+
+  const { id } = req.params;
+
+  const notification = await Notification.findOneAndUpdate(
+    {
+      _id: id,
+      userId: req.user._id
+    },
+    {
+      isRead: true
+    },
+    {
+      new: true
+    }
+  );
+
+  if (!notification) {
+    return res.status(404).json({
+      success: false,
+      message: "Notification not found"
+    });
+  }
+
+  return success(res, notification, "Marked as read");});
+
+  exports.markAllAsRead = asyncHandler(async (req, res) => {
+
+    await Notification.updateMany(
+      { userId: req.user._id, isRead: false },
+      { isRead: true }
+    );
+  
+    return success(res, null, "All notifications marked as read");
   });
-
-   return success(res,"Notification marked as read") 
-});
-
-

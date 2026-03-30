@@ -12,6 +12,6 @@ router.patch(
   "/:id/read",
   authMiddleware,
   notificationController.markAsRead
-)
+);
 
-module.exports = router
+module.exports = router;
