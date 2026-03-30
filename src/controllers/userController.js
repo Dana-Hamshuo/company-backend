@@ -14,13 +14,16 @@ exports.createUser = asyncHandler(async (req,res,next)=>{
 
 exports.getUsers = asyncHandler(async(req,res)=>{
 
-  const features = new APIFeatures(User.find(), req.query)
-    .filter()
-    .search(["name", "email"])
-    .sort()
-    .paginate();
+  const users = await User.find()
+    .skip((page - 1) * limit)
+    .limit(limit);
 
-  const users = await features.query;
+  res.status(200).json({   
+    success: true,
+    page,
+    limit,
+    data: users
+  });
 
   return success(res, users, "Users fetched", {
     page: features.pagination.page,

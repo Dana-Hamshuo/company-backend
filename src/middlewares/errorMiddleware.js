@@ -3,7 +3,7 @@ const AppError = require("../utils/AppError");
 
 module.exports = (err, req, res, next) => {
 
-  console.error("ERROR 💥:", err);
+  console.error("ERROR :", err);
 
   let customError = err;
     if (err.name === "ValidationError") {
