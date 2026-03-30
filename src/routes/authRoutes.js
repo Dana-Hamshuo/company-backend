@@ -9,3 +9,4 @@ router.post(
   validate,
   authController.login
 );
+module.exports = router
