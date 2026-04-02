@@ -107,10 +107,9 @@ exports.login = async (email, password) => {
 
   if (!isMatch) {
     throw new AppError(
-      "Incorrect password",
+      "Invalid email or password",
       401,
-      "AUTH_ERROR",
-      "password"
+      "AUTH_ERROR"
     );
   }
 
