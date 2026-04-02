@@ -138,6 +138,7 @@ exports.getTaskSchedule = asyncHandler(async (req, res, next) => {
   if (!task) {
     throw new AppError("Task not found", 404, "NOT_FOUND", "id");
   }
-
-  return success(res, formatTask(task),"success");
+  const populatedTask = await Task.findById(task._id)
+  .populate("assignedUsers.userId", "name");
+  return success(res, formatTask(populatedTask),"success");
 });
