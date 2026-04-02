@@ -101,21 +101,25 @@ try{
 }; 
 
 exports.completeTask = async(taskId)=>{
-
+  if (!mongoose.Types.ObjectId.isValid(taskId)) {
+    throw new AppError("Invalid task ID", 400, "VALIDATION_ERROR", "id");
+  }
     const task = await Task.findById(taskId)
    
     if(!task){
-      throw new Error("task not found")
+      throw new AppError("task not found", 404, "NOT_FOUND", "id");
     }
-   
+    const validDeps = (task.dependencies || []).filter(dep => 
+      dep?.taskId && mongoose.Types.ObjectId.isValid(dep.taskId)
+    );
     task.status="done"
    
     await task.save()
    
     eventBus.emit("task.completed", task)
 
-    await dependencyEngine.propagateDelay(taskId)
-   
+    await dependencyEngine.updateDependentTasks(taskId, validDeps);
+       
     return task
    
    }
@@ -199,7 +203,7 @@ exports.completeTask = async(taskId)=>{
     await dependencyEngine.propagateDelay(taskId,custom)
   
     return task
-  }catch{
+  }catch (error){
     await session.abortTransaction();
     throw error;
   } finally {

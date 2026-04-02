@@ -3,7 +3,7 @@ const mongoose = require("mongoose")
 const { success } = require("../utils/apiResponse")
 const asyncHandler = require("../utils/asyncHandler");
 const AppError = require("../utils/AppError")
-
+const formatProject = require("../utils/formatProject")
 exports.createProject = asyncHandler(async(req,res,next)=>{
 
    const {
@@ -26,7 +26,7 @@ exports.createProject = asyncHandler(async(req,res,next)=>{
      title,
      description,})
 
-   return success(res,project,"created project", 201)
+   return success(res,formatProject(project),"created project", 201)
 
 });
 exports.getProjects = asyncHandler(async (req, res, next) => {
@@ -39,7 +39,7 @@ exports.getProjects = asyncHandler(async (req, res, next) => {
     .skip((page - 1) * limit)
     .limit(Number(limit))
 
-  return success(res, projects, "fetched projects")
+  return success(res, formatProject(projects), "fetched projects")
 
 })
 exports.deleteProject = asyncHandler(async(req,res,next)=>{
@@ -81,7 +81,7 @@ exports.updateProject = asyncHandler(async (req, res, next) => {
     throw new AppError("Project not found", 404, "NOT_FOUND", "id");
   }
 
-  return success(res, project, "project updated")
+  return success(res, formatProject(project), "project updated")
 
 })
 exports.getProjectById = asyncHandler(async (req, res) => {
@@ -94,6 +94,6 @@ exports.getProjectById = asyncHandler(async (req, res) => {
     throw new AppError("Project not found", 404, "NOT_FOUND", "id");
   }
 
-  return success(res, project, "Project fetched successfully")
+  return success(res, formatProject(project), "Project fetched successfully")
 
 })
