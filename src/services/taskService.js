@@ -11,6 +11,26 @@ const eventBus = require("../events/eventBus")
 const { addWorkingDay } = require("../utils/date")
 const AppError = require("../utils/AppError");
 
+
+
+const assertTaskIsModifiable = (task) => {
+  if (task.status === "done") {
+    throw new AppError(
+      "Cannot modify a completed task",
+      400,
+      "VALIDATION_ERROR",
+      "status"
+    );
+  }
+  if (task.status === "cancelled") {
+    throw new AppError(
+      "Cannot modify a cancelled task",
+      400,
+      "VALIDATION_ERROR",
+      "status"
+    );
+  }
+};
 const normalizeDependencies = (deps) => {
   if (!deps || !Array.isArray(deps)) return [];
   return deps.map(dep => {
@@ -132,6 +152,7 @@ exports.completeTask = async(taskId)=>{
     if (!mongoose.Types.ObjectId.isValid(taskId)) {
       throw new AppError("Invalid task ID", 400, "VALIDATION_ERROR", "id");
     }
+    assertTaskIsModifiable(task);
     const dependents = await Task.find({ "dependencies.taskId": taskId });
     const validDependents = dependents.filter(task => 
       task.dependencies?.some(dep => 
@@ -154,7 +175,8 @@ exports.completeTask = async(taskId)=>{
    try{
     const task = await Task.findById(taskId)
     if(!task) throw new AppError("task not found", 404);
-  
+      
+    assertTaskIsModifiable(task);
 
       const newSchedule = task.schedule.map(day => {
         let newDate = day.date
@@ -230,7 +252,7 @@ exports.completeTask = async(taskId)=>{
 
     const task = await Task.findById(taskId)
     if(!task) throw new AppError("task not found", 404);
-  
+    assertTaskIsModifiable(task);
     const {
       title,
       assignedUsers,
