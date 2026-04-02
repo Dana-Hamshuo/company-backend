@@ -47,7 +47,7 @@ module.exports = async (req, res, next) => {
         success: false,
         message: "Access denied: scheduler only",
         error: {
-          type: "AUTH_ERROR",
+          type: "FORBIDDEN",
           field: null,
           details: "Only scheduler can perform this action"
         }

@@ -3,7 +3,7 @@ const router = require("express").Router()
 const taskController = require("../controllers/taskController")
 
 const auth = require("../middlewares/authMiddleware")
-const { authorizeScheduler } = require("../middlewares/authMiddleware");
+const  authorizeScheduler = require("../middlewares/authMiddleware");
 const { createTaskValidation } = require("../validators/task/createTask.validation");
 const validate = require("../middlewares/validationMiddleware");
 
@@ -11,7 +11,7 @@ router.post(
     "/",
     auth, 
     authorizeScheduler,                              
-    createTaskValidation,
+    ...createTaskValidation,
     validate,
     taskController.createTask
   );
