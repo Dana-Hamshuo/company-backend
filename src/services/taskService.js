@@ -129,9 +129,11 @@ exports.completeTask = async(taskId)=>{
 
 
    exports.deleteTask = async(taskId)=>{
-
+    if (!mongoose.Types.ObjectId.isValid(taskId)) {
+      throw new AppError("Invalid task ID", 400, "VALIDATION_ERROR", "id");
+    }
     const dependents = await Task.find({ "dependencies.taskId": taskId });
-    const validDependents = allTasks.filter(task => 
+    const validDependents = dependents.filter(task => 
       task.dependencies?.some(dep => 
         dep?.taskId && mongoose.Types.ObjectId.isValid(dep.taskId)
       )
