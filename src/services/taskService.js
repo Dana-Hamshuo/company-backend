@@ -130,10 +130,14 @@ exports.completeTask = async(taskId)=>{
 
    exports.deleteTask = async(taskId)=>{
 
-    const dependents = await Task.find({dependencies:taskId})
-  
-    if(dependents.length){
-      throw new Error("cannot delete task with dependencies")
+    const dependents = await Task.find({ "dependencies.taskId": taskId });
+    const validDependents = allTasks.filter(task => 
+      task.dependencies?.some(dep => 
+        dep?.taskId && mongoose.Types.ObjectId.isValid(dep.taskId)
+      )
+    );
+    if (validDependents.length > 0) {
+      throw new AppError("cannot delete task with dependencies", 409, "CONFLICT_ERROR", "taskId");
     }
   
     await Task.findByIdAndDelete(taskId)
