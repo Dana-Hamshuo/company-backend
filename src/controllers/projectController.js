@@ -24,7 +24,9 @@ exports.createProject = asyncHandler(async(req,res,next)=>{
 
      clientId,
      title,
-     description,})
+     description,
+     createdBy: req.user._id 
+    })
 
    return success(res,formatProject(project),"created project", 201)
 
@@ -39,7 +41,7 @@ exports.getProjects = asyncHandler(async (req, res, next) => {
     .skip((page - 1) * limit)
     .limit(Number(limit))
 
-  return success(res, formatProject(projects), "fetched projects")
+  return success(res, projects.map(formatProject), "fetched projects")
 
 })
 exports.deleteProject = asyncHandler(async(req,res,next)=>{

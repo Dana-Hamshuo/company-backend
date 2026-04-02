@@ -3,19 +3,21 @@ const router = require("express").Router()
 const taskController = require("../controllers/taskController")
 
 const auth = require("../middlewares/authMiddleware")
-// const authorizeScheduler = require("../")
+const { authorizeScheduler } = require("../middlewares/authMiddleware");
 const { createTaskValidation } = require("../validators/task/createTask.validation");
 const validate = require("../middlewares/validationMiddleware");
 
 router.post(
     "/",
-    auth,                               
+    auth, 
+    authorizeScheduler,                              
     createTaskValidation,
     validate,
     taskController.createTask
   );
 
-router.post("/:id/delay",auth,taskController.delayTask)
+
+router.post("/:id/delay",auth,authorizeScheduler,taskController.delayTask)
 
 router.get("/",auth,taskController.getAllTasks)
 
@@ -25,10 +27,11 @@ router.get("/range", auth, taskController.getTasksByDateRange)
 
 router.get("/:id", auth, taskController.getTaskSchedule)
 
-router.patch( "/:id",auth,taskController.updateTask)
+router.patch( "/:id",auth,
+  authorizeScheduler,taskController.updateTask)
 
-router.post("/:id/complete",auth,taskController.completeTask)
+router.post("/:id/complete",auth,authorizeScheduler,taskController.completeTask)
 
-router.delete("/:id",auth,taskController.deleteTask)
+router.delete("/:id",auth,authorizeScheduler,taskController.deleteTask)
 
 module.exports = router

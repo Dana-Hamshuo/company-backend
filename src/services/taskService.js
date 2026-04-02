@@ -37,6 +37,14 @@ exports.createTask = async(data,user)=>{
     dependencies
   } = data
 
+  if (user.role !== "scheduler") {
+    throw new AppError(
+      "Only scheduler can create tasks",
+      403,
+      "FORBIDDEN",
+      "role"
+    );
+  }
   validateCreateTask(data)
   validateSchedule(schedule) 
 
@@ -101,6 +109,9 @@ try{
 }; 
 
 exports.completeTask = async(taskId)=>{
+  if (user.role !== "scheduler") {
+    throw new AppError("Only scheduler can update tasks", 403, "FORBIDDEN", "role");
+  }
   if (!mongoose.Types.ObjectId.isValid(taskId)) {
     throw new AppError("Invalid task ID", 400, "VALIDATION_ERROR", "id");
   }
@@ -127,7 +138,9 @@ exports.completeTask = async(taskId)=>{
 
 
    exports.deleteTask = async(taskId)=>{
-
+    if (user.role !== "scheduler") {
+      throw new AppError("Only scheduler can delete tasks", 403, "FORBIDDEN", "role");
+    }
     const dependents = await Task.find({dependencies:taskId})
   
     if(dependents.length){
@@ -138,6 +151,10 @@ exports.completeTask = async(taskId)=>{
   }
 
   exports.markTaskDelayed = async(taskId, reason, custom = {})=>{
+    if (user.role !== "scheduler") {
+      throw new AppError("Only scheduler can delay tasks", 403, "FORBIDDEN", "role");
+    }
+
     const session = await mongoose.startSession();
     session.startTransaction();
 
@@ -212,6 +229,9 @@ exports.completeTask = async(taskId)=>{
   }
 
    exports.updateTaskSafe = async(taskId, data)=>{
+    if (user.role !== "scheduler") {
+      throw new AppError("Only scheduler can update tasks", 403, "FORBIDDEN", "role");
+    }
 
     const session = await mongoose.startSession();
     session.startTransaction();
