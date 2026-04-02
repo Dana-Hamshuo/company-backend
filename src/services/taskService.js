@@ -1,4 +1,5 @@
 //src/services/taskService.js
+const mongoose = require("mongoose");
 const {validateSchedule,validateCreateTask} = require("../validators/taskValidator")
 const {checkUserConflict} = require("../utils/conflict")
 const dependencyEngine = require("./dependencyEngine")

@@ -13,7 +13,7 @@ exports.requireScheduler = (req, res, next) => {
 exports.allowRoles = (...roles)=>{
   return res.status(403).json({
     success: false,
-    message: "Forbidden",
+    message: "  ",
     error: {
       type: "AUTH_ERROR",
       field: "role"
