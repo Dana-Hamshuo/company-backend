@@ -10,6 +10,22 @@ const eventBus = require("../events/eventBus")
 const { addWorkingDay } = require("../utils/date")
 const AppError = require("../utils/AppError");
 
+const normalizeDependencies = (deps) => {
+  if (!deps || !Array.isArray(deps)) return [];
+  return deps.map(dep => {
+    if (typeof dep === "string") {
+      return { taskId: dep, isRequired: true };
+    }
+    if (dep && typeof dep === "object" && dep.taskId) {
+      return {
+        taskId: dep.taskId,
+        isRequired: dep.isRequired !== undefined ? dep.isRequired : true
+      };
+    }
+    return null;
+  }).filter(Boolean);
+};
+
 exports.createTask = async(data,user)=>{
 
   const {
@@ -22,10 +38,17 @@ exports.createTask = async(data,user)=>{
 
   validateCreateTask(data)
   validateSchedule(schedule) 
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+try{
   for(const member of assignedUsers){
 
-    const dbUser = await User.findById(member.userId)
-    if(!dbUser) throw new Error("user not found")
+    const dbUser = await User.findById(member.userId).session(session);
+    if(!dbUser) {
+      throw new AppError("user not found", 404, "NOT_FOUND", "userId");
+    }
 
     for(const day of schedule){
 
@@ -33,32 +56,48 @@ exports.createTask = async(data,user)=>{
         dbUser,
         day.date,
         day.startTime,
-        day.endTime
+        day.endTime,
+        null,
+        session
       )
 
       if(conflict){
-        throw new Error(`conflict for ${dbUser.jobTitle}`)
+        throw new AppError(
+          `conflict for ${dbUser.jobTitle}`,
+          409,
+          "CONFLICT_ERROR",
+          "schedule"
+        );
       }
     }
   }
 
   const status = await dependencyEngine.getInitialStatus(dependencies)
+  const normalizedDeps = normalizeDependencies(dependencies);
 
-  const task = await Task.create({
+  const task = await Task.create([{
     title,
     projectId,
     assignedUsers,
     schedule,
-    dependencies,
+    dependencies: normalizedDeps,
     status,
-    createdBy:user._id
-  })
-  
-  eventBus.emit("task.created", task)
-  
-  return task
-}
+    createdBy: user._id,
+    lastModifiedBy: user._id
+  }], { session });
 
+  await session.commitTransaction();
+  
+  eventBus.emit("task.created", task[0])
+  
+  return task[0];
+}catch (error){
+  await session.abortTransaction();
+  throw error;
+  } finally {
+    session.endSession();
+  }
+}; 
 
 exports.completeTask = async(taskId)=>{
 
@@ -94,9 +133,12 @@ exports.completeTask = async(taskId)=>{
   }
 
   exports.markTaskDelayed = async(taskId, reason, custom = {})=>{
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
+   try{
     const task = await Task.findById(taskId)
-    if(!task) throw new Error("task not found")
+    if(!task) throw new AppError("task not found", 404);
   
 
       const newSchedule = task.schedule.map(day => {
@@ -117,7 +159,8 @@ exports.completeTask = async(taskId)=>{
 
     for(const member of task.assignedUsers){
   
-      const dbUser = await User.findById(member.userId)
+      const dbUser = await User.findById(member.userId).session(session);
+      if (!dbUser) throw new AppError("user not found", 404);
   
       for(const day of newSchedule){
   
@@ -126,10 +169,16 @@ exports.completeTask = async(taskId)=>{
           day.date,
           day.startTime,
           day.endTime,
-          task._id
+          task._id,
+          session
         )
   
-        if(conflict){throw new Error(`conflict after delay for ${dbUser.name}`)
+        if(conflict){
+          throw new AppError(
+            `conflict after delay for ${dbUser.name}`,
+            409,
+            "CONFLICT_ERROR"
+          );
         }
       }
     }
@@ -137,20 +186,34 @@ exports.completeTask = async(taskId)=>{
     task.schedule = newSchedule
     task.status = "delayed"
     task.delayReason = reason
+    task.lastModifiedBy = task.lastModifiedBy || task.createdBy;
   
-    await task.save()
-  
+
+    await task.save({ session });
+
+    await session.commitTransaction();
+
     eventBus.emit("task.delayed", task)
   
     await dependencyEngine.propagateDelay(taskId,custom)
   
     return task
+  }catch{
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    session.endSession();
+  }
   }
 
    exports.updateTaskSafe = async(taskId, data)=>{
 
+    const session = await mongoose.startSession();
+    session.startTransaction();
+   try{
+
     const task = await Task.findById(taskId)
-    if(!task) throw new Error("task not found")
+    if(!task) throw new AppError("task not found", 404);
   
     const {
       title,
@@ -164,8 +227,8 @@ exports.completeTask = async(taskId)=>{
   
       for(const member of assignedUsers || task.assignedUsers){
   
-        const dbUser = await User.findById(member.userId)
-        if(!dbUser) throw new Error("user not found")
+        const dbUser = await User.findById(member.userId).session(session);
+        if(!dbUser) throw new AppError("user not found", 404)
   
         for(const day of schedule){
   
@@ -174,11 +237,16 @@ exports.completeTask = async(taskId)=>{
             day.date,
             day.startTime,
             day.endTime,
-            task._id 
+            task._id ,
+            session
           )
   
           if(conflict){
-            throw new Error(`conflict for ${dbUser.name}`)
+            throw new AppError(
+              `conflict for ${dbUser.name}`,
+              409,
+              "CONFLICT_ERROR"
+            );
           }
         }
       }
@@ -194,7 +262,15 @@ exports.completeTask = async(taskId)=>{
       task.title = title
     }
   
-    await task.save()
-  
-    return task
+    task.lastModifiedBy = task.lastModifiedBy || task.createdBy;
+
+    await task.save({ session })
+        await session.commitTransaction();
+    return task;
+  } catch (error) {
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    session.endSession();
   }
+};

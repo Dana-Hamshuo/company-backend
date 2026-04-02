@@ -1,3 +1,4 @@
+//src/validators/auth/login.validation.js
 const { body } = require("express-validator");
 
 exports.loginValidation = [

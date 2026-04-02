@@ -16,15 +16,14 @@ const taskSchema = new mongoose.Schema({
 
   description: String,
 
-  assignedUsers:[
-    {
-      userId:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"User",
-        required:true
-      }
-    }
-  ],
+  assignedUsers: [{
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true
+    },
+    isPrimary: { type: Boolean, default: false } 
+  }],
 
   schedule:[
     {
@@ -40,9 +39,13 @@ const taskSchema = new mongoose.Schema({
     default:"pending"
   },
 
-  dependencies:[{
-    type: mongoose.Schema.Types.ObjectId,
-    ref:"Task"
+  dependencies: [{
+    taskId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Task",
+      required: true
+    },
+    isRequired: { type: Boolean, default: true } 
   }],
 
   delayReason:String,
@@ -56,8 +59,10 @@ const taskSchema = new mongoose.Schema({
   createdBy:{
     type: mongoose.Schema.Types.ObjectId,
     ref:"User"
-  }
+  },
 
+lastModifiedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+lastModifiedAt: Date
 },{timestamps:true});
 
 taskSchema.index({ "assignedUsers.userId":1 })

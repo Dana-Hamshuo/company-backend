@@ -1,3 +1,4 @@
+//src/validators/auth/register.validation.js
 const { body } = require("express-validator");
 
 exports.registerValidation = [

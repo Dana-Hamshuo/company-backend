@@ -5,27 +5,33 @@ const {toDateKey} = require("./dateFormat")
 const {isOverlap} = require("./time")
 
 exports.checkUserConflict = async(
- user,
- date,
- startTime,
- endTime,
- excludeTaskId = null 
+  user,
+  date,
+  startTime,
+  endTime,
+  excludeTaskId = null,
+  session = null
 )=>{
 
   
 
-  const tasks = await Task.find({
+  const query = {
     "assignedUsers.userId": user._id,
     status: { $ne: "done" },
     "schedule.date": {
-      $gte: new Date(new Date(date).setHours(0,0,0)),
-      $lte: new Date(new Date(date).setHours(23,59,59))
+      $gte: new Date(new Date(date).setHours(0, 0, 0)),
+      $lte: new Date(new Date(date).setHours(23, 59, 59))
     }
-  })
+  };
 
- let overlaps = 0
+  let tasksQuery = Task.find(query);
+  if (session) {
+    tasksQuery = tasksQuery.session(session);
+  }
+  const tasks = await tasksQuery;
 
- const targetDate = toDateKey(date)
+  let overlaps = 0;
+  const targetDate = toDateKey(date);
 
  for(const task of tasks){
 
