@@ -30,8 +30,9 @@ exports.createTask = asyncHandler(async (req, res, next) => {
 exports.completeTask = asyncHandler(async (req, res, next) => {
 
   const task = await taskService.completeTask(req.params.id)
-
-  return success(res,formatTask(task),"completed")
+  const populatedTask = await Task.findById(task._id)
+  .populate("assignedUsers.userId", "name");
+  return success(res,formatTask(populatedTask),"completed")
 });
 exports.delayTask = asyncHandler(async (req, res, next) => {
  const task = await taskService.markTaskDelayed(
@@ -39,7 +40,9 @@ exports.delayTask = asyncHandler(async (req, res, next) => {
   req.body.reason,
   req.body 
 )
-return success(res, formatTask(task), "task delayed")
+const populatedTask = await Task.findById(task._id)
+.populate("assignedUsers.userId", "name");
+return success(res, formatTask(populatedTask), "task delayed")
 
 });
 exports.deleteTask = asyncHandler(async (req, res, next) => {
