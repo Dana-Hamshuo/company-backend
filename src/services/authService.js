@@ -92,25 +92,19 @@ exports.login = async (email, password) => {
 
   const normalizedEmail = email.trim().toLowerCase();
 
-  const user = await User.findOne({ email: normalizedEmail });
+  const user = await User.findOne({ email: normalizedEmail }).select("+password");
 
   if (!user) {
-    throw new AppError(
-      "User not found",
-      404,
-      "NOT_FOUND",
-      "email"
-    );
+    throw new AppError("Invalid email or password", 401, "AUTH_ERROR");
   }
 
+  if (!user.password?.startsWith('$2')) {
+    throw new AppError("Invalid email or password", 401, "AUTH_ERROR");
+  }
   const isMatch = await bcrypt.compare(password, user.password);
 
   if (!isMatch) {
-    throw new AppError(
-      "Invalid email or password",
-      401,
-      "AUTH_ERROR"
-    );
+    throw new AppError("Invalid email or password", 401, "AUTH_ERROR");
   }
 
   const token = jwt.sign(
