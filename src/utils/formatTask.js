@@ -40,10 +40,7 @@ function formatTask(task) {
       startTime: s.startTime,
       endTime: s.endTime
     })),
-    createdBy: {
-      id: task.createdBy._id || task.createdBy,
-      name: task.createdBy?.name || "Unknown"
-    }
+  
   };
 }
 module.exports = formatTask;

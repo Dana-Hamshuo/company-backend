@@ -24,10 +24,7 @@ exports.createProject = asyncHandler(async(req,res,next)=>{
 
      clientId,
      title,
-     description,
-     createdBy:req.user._id
-
-   })
+     description,})
 
    return success(res,project,"created project", 201)
 
