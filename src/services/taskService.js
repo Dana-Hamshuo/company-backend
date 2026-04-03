@@ -166,7 +166,7 @@ exports.completeTask = async(taskId)=>{
     await Task.findByIdAndDelete(taskId)
   }
 
-  exports.markTaskDelayed = async(taskId, reason, custom = {})=>{
+  exports.markTaskDelayed = async(taskId, reason, custom = {},user)=>{
 
 
     const session = await mongoose.startSession();
