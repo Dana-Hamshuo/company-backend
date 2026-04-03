@@ -38,7 +38,8 @@ exports.delayTask = asyncHandler(async (req, res, next) => {
  const task = await taskService.markTaskDelayed(
   req.params.id,
   req.body.reason,
-  req.body 
+  req.body,
+  req.user 
 )
 const populatedTask = await Task.findById(task._id)
 .populate("assignedUsers.userId", "name");
