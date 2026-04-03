@@ -178,71 +178,132 @@ exports.completeTask = async(taskId)=>{
       
     assertTaskIsModifiable(task);
 
-      const newSchedule = task.schedule.map(day => {
-        let newDate = day.date
-        if (custom.customDate) {
-          newDate = new Date(custom.customDate)
-        } else {
-          newDate = addWorkingDay(day.date)
-        }
-        return {
-          date: newDate,
-          startTime: custom.customTime?.startTime || day.startTime,
-          endTime: custom.customTime?.endTime || day.endTime
-        }
-      })
-    
+    const newSchedule = task.schedule.map(day => {
+      let newDate = day.date;
+      if (custom.customDate) {
+        newDate = new Date(custom.customDate);
+      } else {
+        newDate = addWorkingDay(day.date);
+      }
+      return {
+        date: newDate,
+        startTime: custom.customTime?.startTime || day.startTime,
+        endTime: custom.customTime?.endTime || day.endTime
+      };
+    });
   
-
-    for(const member of task.assignedUsers){
-  
-      const dbUser = await User.findById(member.userId).session(session);
-      if (!dbUser) throw new AppError("user not found", 404);
-  
-      for(const day of newSchedule){
-  
-        const conflict = await checkUserConflict(
-          dbUser,
-          day.date,
-          day.startTime,
-          day.endTime,
-          task._id,
+    const conflicts = await checkConflictsForTask(
+      task,
+      newSchedule,
+      session
+    );
+    if (conflicts.length > 0) {
+      for (const conflict of conflicts) {
+        await cascadeDelayTask(
+          conflict.taskId,
+          `Cascade delay: ${reason}`,
+          {},
           session
-        )
-  
-        if(conflict){
-          throw new AppError(
-            `conflict after delay for ${dbUser.name}`,
-            409,
-            "CONFLICT_ERROR"
-          );
-        }
+        );
+      }
+
+      const newConflicts = await checkConflictsForTask(task, newSchedule, session);
+      if (newConflicts.length > 0) {
+        throw new AppError(
+          "Cascade delay exceeded maximum iterations",
+          409,
+          "CONFLICT_ERROR",
+          "schedule"
+        );
       }
     }
-  
-    task.schedule = newSchedule
-    task.status = "delayed"
-    task.delayReason = reason
-    task.lastModifiedBy = task.lastModifiedBy || task.createdBy;
-  
+    task.schedule = newSchedule;
+    task.status = "delayed";
+    task.delayReason = reason;
+    task.lastModifiedBy = user._id;
 
     await task.save({ session });
-
     await session.commitTransaction();
 
-    eventBus.emit("task.delayed", task)
-  
-    await dependencyEngine.propagateDelay(taskId,custom)
-  
-    return task
-  }catch (error){
+    eventBus.emit("task.delayed", task);
+    await dependencyEngine.propagateDelay(taskId, custom);
+
+    return task;
+
+  } catch (error) {
     await session.abortTransaction();
     throw error;
   } finally {
     session.endSession();
   }
+};
+async function checkConflictsForTask(task, newSchedule, session) {
+  const conflicts = [];
+
+  for (const member of task.assignedUsers) {
+    const dbUser = await User.findById(member.userId).session(session);
+    if (!dbUser) continue;
+
+    for (const day of newSchedule) {
+      const query = {
+        "assignedUsers.userId": dbUser._id,
+        _id: { $ne: task._id }, 
+        status: { $ne: "done" },
+        "schedule.date": {
+          $gte: new Date(new Date(day.date).setHours(0, 0, 0)),
+          $lte: new Date(new Date(day.date).setHours(23, 59, 59))
+        }
+      };
+
+      const overlappingTasks = await Task.find(query).session(session);
+
+      for (const overlappingTask of overlappingTasks) {
+        for (const sched of overlappingTask.schedule) {
+          const isTimeOverlap = require("../utils/time").isOverlap(
+            day.startTime,
+            day.endTime,
+            sched.startTime,
+            sched.endTime
+          );
+
+          if (isTimeOverlap) {
+            conflicts.push({
+              taskId: overlappingTask._id,
+              userId: dbUser._id,
+              userName: dbUser.name,
+              taskTitle: overlappingTask.title,
+              date: day.date,
+              startTime: day.startTime,
+              endTime: day.endTime
+            });
+          }
+        }
+      }
+    }
   }
 
+  return conflicts;
+}
+
+async function cascadeDelayTask(taskId, reason, custom, session) {
+  const task = await Task.findById(taskId).session(session);
+  if (!task) return;
+
+  assertTaskIsModifiable(task);
+
+  const newSchedule = task.schedule.map(day => ({
+    date: addWorkingDay(day.date),
+    startTime: day.startTime,
+    endTime: day.endTime
+  }));
+
+  task.schedule = newSchedule;
+  task.status = "delayed";
+  task.delayReason = reason;
+
+  await task.save({ session });
+  eventBus.emit("task.delayed", task);
+}
    exports.updateTaskSafe = async(taskId, data)=>{
  
 
