@@ -22,7 +22,7 @@ exports.deleteUser = asyncHandler(async(req,res,next)=>{
 
    await User.findByIdAndDelete(userId)
 
-   success(res, null,"User deleted")
+   success(res, "User deleted")
 });
 exports.updateUser = asyncHandler(async (req,res,next)=>{
    const allowedFields = [

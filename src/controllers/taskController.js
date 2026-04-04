@@ -49,7 +49,7 @@ return success(res, formatTask(populatedTask), "task delayed")
 exports.deleteTask = asyncHandler(async (req, res, next) => {
   await taskService.deleteTask(req.params.id)
 
-  return success(res, null, "User deleted");
+  return success(res,"task deleted") 
 
 });
 exports.getAllTasks = asyncHandler(async (req, res, next) => {
@@ -82,7 +82,7 @@ exports.getTasksByUser = asyncHandler(async (req, res, next) => {
       select: "name"
     }
   })
-  return success(res, tasks.map(formatTask), "Tasks fetched");
+return success(res,tasks)
 });
 
 exports.getTasksByDateRange = asyncHandler(async (req, res, next) => {
@@ -111,7 +111,7 @@ exports.updateTask = asyncHandler(async (req, res, next) => {
    req.body
   )
 
-  return success(res, null, "Updated successfully");
+  return success(res,"updated successfully")
 
 });
 exports.getTaskSchedule = asyncHandler(async (req, res, next) => {
