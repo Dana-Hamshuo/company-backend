@@ -56,8 +56,9 @@ exports.getAllTasks = asyncHandler(async (req, res, next) => {
   const { page = 1, limit = 20 } = req.query;
 
   const tasks = await Task.find()
-    .select("title status schedule projectId assignedUsers dependencies")
-    .populate("projectId", "title")           
+   .select("title status schedule projectId assignedUsers dependencies progress delayReason createdAt updatedAt")
+    .populate("projectId", "title clientId") 
+    .populate("projectId.clientId", "name businessType")          
     .populate("assignedUsers.userId", "name")  
     .skip((page - 1) * limit)
     .limit(Number(limit))
@@ -143,6 +144,8 @@ exports.getTaskSchedule = asyncHandler(async (req, res, next) => {
     throw new AppError("Task not found", 404, "NOT_FOUND", "id");
   }
   const populatedTask = await Task.findById(task._id)
+  .populate("projectId", "title clientId")
+  .populate("projectId.clientId", "name businessType")
   .populate("assignedUsers.userId", "name");
   return success(res, formatTask(populatedTask),"success");
 });
