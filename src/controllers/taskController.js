@@ -49,22 +49,26 @@ return success(res, formatTask(populatedTask), "task delayed")
 exports.deleteTask = asyncHandler(async (req, res, next) => {
   await taskService.deleteTask(req.params.id)
 
-  return success(res,"task deleted") 
+  return success(res, null, "User deleted");
 
 });
 exports.getAllTasks = asyncHandler(async (req, res, next) => {
   const { page = 1, limit = 20 } = req.query;
 
   const tasks = await Task.find()
-   .select("title status schedule projectId assignedUsers dependencies progress delayReason createdAt updatedAt")
+    .select("title status schedule projectId assignedUsers dependencies progress delayReason createdAt updatedAt")
     .populate("projectId", "title clientId") 
     .populate("projectId.clientId", "name businessType")          
     .populate("assignedUsers.userId", "name")  
     .skip((page - 1) * limit)
     .limit(Number(limit))
     .lean();
-    const formattedTasks = tasks.map(task => formatTask(task));
- });
+
+  const formattedTasks = tasks.map(task => formatTask(task));
+
+  return success(res, formattedTasks, "Tasks fetched");
+});
+
 exports.getTasksByUser = asyncHandler(async (req, res, next) => {
   const userId = req.params.userId
 
@@ -78,7 +82,7 @@ exports.getTasksByUser = asyncHandler(async (req, res, next) => {
       select: "name"
     }
   })
-return success(res,tasks)
+  return success(res, tasks.map(formatTask), "Tasks fetched");
 });
 
 exports.getTasksByDateRange = asyncHandler(async (req, res, next) => {
@@ -107,7 +111,7 @@ exports.updateTask = asyncHandler(async (req, res, next) => {
    req.body
   )
 
-  return success(res,"updated successfully")
+  return success(res, null, "Updated successfully");
 
 });
 exports.getTaskSchedule = asyncHandler(async (req, res, next) => {
