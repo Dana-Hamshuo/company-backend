@@ -46,7 +46,7 @@ function formatTask(task) {
       name: user.userId?.name || "Unknown"
     })),
     
-    dependencies: task.dependencies.map(dep => ({
+    dependencies: (task.dependencies || []).map(dep => ({
       taskId: dep.taskId || dep,
       isRequired: dep.isRequired !== undefined ? dep.isRequired : true
     })),
