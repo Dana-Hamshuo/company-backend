@@ -25,3 +25,11 @@ exports.login = asyncHandler(async (req, res, next) => {
     },"Login successful")
 
 });
+
+
+exports.getMe = asyncHandler(async (req, res) => {
+  res.status(200).json({
+    success: true,
+    data: req.user
+  });
+});
