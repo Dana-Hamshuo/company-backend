@@ -8,4 +8,6 @@ router.get("/month",auth,calendarController.getMonth)
 
 router.get("/my", auth, calendarController.getMyCalendar)
 
+router.get("/range", auth, taskController.getTasksByDateRange) 
+
 module.exports = router

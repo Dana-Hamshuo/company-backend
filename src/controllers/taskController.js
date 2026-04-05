@@ -60,7 +60,7 @@ exports.getAllTasks = asyncHandler(async (req, res, next) => {
   const tasks = await Task.find()
     .select("title status schedule projectId assignedUsers dependencies progress delayReason createdAt updatedAt")
     .populate("projectId", "title clientId") 
-    .populate("projectId.clientId", "name businessType")          
+    .populate("projectId.clientId", "name businessType notes")          
     .populate("assignedUsers.userId", "name")  
     .skip((page - 1) * limit)
     .limit(Number(limit))
