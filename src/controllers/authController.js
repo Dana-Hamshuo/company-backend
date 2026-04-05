@@ -23,3 +23,16 @@ exports.login = asyncHandler(async (req, res, next) => {
         role: result.user.role
       }
     },"Login successful")});
+
+    exports.getMe = asyncHandler(async (req, res) => {
+      return success(res, {
+        id: req.user._id,
+        name: req.user.name,
+        email: req.user.email,
+        role: req.user.role,
+        jobTitle: req.user.jobTitle,
+        allowOverlap: req.user.allowOverlap,
+        maxParallelTasks: req.user.maxParallelTasks,
+        isActive: req.user.isActive
+      }, "User fetched");
+    });
