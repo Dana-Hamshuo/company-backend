@@ -1272,27 +1272,7 @@ Success Response (200):
 }
 ```
 
----
-
-## Role-Based Access
-
-| Endpoint | Role Required |
-|----------|--------------|
-| POST /auth/* | Public |
-| GET /auth/me | Any authenticated |
-| CRUD /users | Any authenticated |
-| CRUD /clients | Any authenticated |
-| CRUD /projects | Any authenticated |
-| POST/PATCH/DELETE /tasks | scheduler only |
-| GET /tasks* | Any authenticated |
-| GET /calendar/* | Any authenticated |
-| CRUD /notifications | Any authenticated (own data only) |
-
----
-
----
-
-Base URL: https://company-backend-o1zw.onrender.com/api
+---Base URL: https://company-backend-o1zw.onrender.com/api
 Last Updated: April 2026
 API Version: 1.0
 
