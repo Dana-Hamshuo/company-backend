@@ -22,11 +22,4 @@ exports.login = asyncHandler(async (req, res, next) => {
         name: result.user.name,
         role: result.user.role
       }
-    },"Login successful")
-
-});
-
-
-exports.getMe = asyncHandler(async (req, res) => {
-  return success(res, req.user, "User fetched");
-});
+    },"Login successful")});
