@@ -23,7 +23,9 @@ exports.createTask = asyncHandler(async (req, res, next) => {
   const task = await taskService.createTask(req.body, req.user)
 
   const populatedTask = await Task.findById(task._id)
-  .populate("assignedUsers.userId", "name");  
+  .populate("assignedUsers.userId", "name")
+  .populate("projectId", "title clientId") 
+  .populate("projectId.clientId", "name businessType")    
   return success(res,formatTask(populatedTask),"task created" ,201)
 
 });
