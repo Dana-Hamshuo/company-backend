@@ -13,9 +13,9 @@ router.post(
 );
 router.get("/",auth,projectController.getProjects)
 
-router.delete("/:id",auth,projectController.deleteProject)
+router.delete("/:id",auth,auth.authorizeScheduler,projectController.deleteProject)
 
-router.patch("/:id", auth, projectController.updateProject)
+router.patch("/:id", auth,auth.authorizeScheduler, projectController.updateProject)
 
 router.get("/:id",auth,projectController.getProjectById)
 module.exports = router

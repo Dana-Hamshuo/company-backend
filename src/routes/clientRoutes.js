@@ -7,6 +7,7 @@ const { createClientValidation } = require("../validators/client/client.validati
 router.post(
   "/",
   auth,
+  auth.authorizeScheduler,
   createClientValidation,
   validate,
   clientController.createClient
@@ -14,8 +15,8 @@ router.post(
 
 router.get("/",auth,clientController.getClients)
 
-router.delete("/:id",auth,clientController.deleteClient)
+router.delete("/:id",auth,auth.authorizeScheduler,clientController.deleteClient)
 
-router.patch("/:id", auth, clientController.updateClient)
+router.patch("/:id", auth,auth.authorizeScheduler, clientController.updateClient)
 
 module.exports = router

@@ -7,10 +7,10 @@ router.post("/",userController.createUser)
 
 router.get("/",auth,userController.getUsers)
 
-router.patch("/:id", auth,userController.updateUser)
+router.patch("/:id", auth,auth.authorizeScheduler,userController.updateUser)
 
 router.get("/:id", auth,userController.getUserById)
 
-router.delete("/:id",auth,userController.deleteUser)
+router.delete("/:id",auth,auth.authorizeScheduler,userController.deleteUser)
 
 module.exports = router
