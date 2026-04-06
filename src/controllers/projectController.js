@@ -99,3 +99,129 @@ exports.getProjectById = asyncHandler(async (req, res) => {
   return success(res, formatProject(project), "Project fetched successfully")
 
 })
+exports.completeProject = asyncHandler(async (req, res) => {
+  const project = await Project.findById(req.params.id);
+  
+  if (!project) {
+    throw new AppError("Project not found", 404, "NOT_FOUND", "id");
+  }
+  project.status = "completed";
+  await project.save();
+  await Task.updateMany(
+    { 
+      projectId: project._id, 
+      status: { $in: ["pending", "in_progress"] } 
+    },
+    { 
+      $set: { 
+        status: "done",
+        progress: 100,
+        lastModifiedBy: req.user._id,
+        lastModifiedAt: new Date()
+      } 
+    }
+  );
+  const assignedUsers = await Task.distinct(
+    "assignedUsers.userId", 
+    { projectId: project._id }
+  );
+  if (assignedUsers.length > 0) {
+    await notificationService.notifyUsers(
+      assignedUsers,
+      `Project "${project.title}" has been completed`,
+      "task_update",
+      null,
+      { projectId: project._id, action: "project_completed" }
+    );
+  }
+
+  return success(res, formatProject(project), "Project completed");
+});
+exports.pauseProject = asyncHandler(async (req, res) => {
+  const project = await Project.findById(req.params.id);
+  
+  if (!project) {
+    throw new AppError("Project not found", 404, "NOT_FOUND", "id");
+  }
+
+  project.status = "paused";
+  await project.save();
+
+  await Task.updateMany(
+    { 
+      projectId: project._id, 
+      status: { $in: ["pending", "in_progress"] } 
+    },
+    { 
+      $set: { 
+        status: "blocked",
+        delayReason: "Project paused",
+        lastModifiedBy: req.user._id,
+        lastModifiedAt: new Date()
+      } 
+    }
+  );
+  const assignedUsers = await Task.distinct(
+    "assignedUsers.userId", 
+    { projectId: project._id }
+  );
+  if (assignedUsers.length > 0) {
+    await notificationService.notifyUsers(
+      assignedUsers,
+      `Project "${project.title}" has been paused`,
+      "delay",
+      null,
+      { projectId: project._id, action: "project_paused" }
+    );
+  }
+
+  return success(res, formatProject(project), "Project paused");
+});
+
+exports.reactivateProject = asyncHandler(async (req, res) => {
+  const project = await Project.findById(req.params.id);
+  
+  if (!project) {
+    throw new AppError("Project not found", 404, "NOT_FOUND", "id");
+  }
+
+  project.status = "active";
+  await project.save();
+
+  await Task.updateMany(
+    { 
+      projectId: project._id, 
+      status: { $in: ["blocked", "delayed"] },
+      delayReason: "Project paused"
+    },
+    { 
+      $set: { 
+        status: "pending",
+        delayReason: null,
+        lastModifiedBy: req.user._id,
+        lastModifiedAt: new Date()
+      } 
+    }
+  );
+  const assignedUsers = await Task.distinct(
+    "assignedUsers.userId", 
+    { projectId: project._id }
+  );
+  
+  if (assignedUsers.length > 0) {
+    await notificationService.notifyUsers(
+      assignedUsers,
+      `Project "${project.title}" has been reactivated - you can resume work`,
+      "task_update",
+      null,
+      { 
+        projectId: project._id, 
+        action: "project_reactivated",
+        reactivatedBy: req.user._id,
+        reactivatedAt: new Date()
+      }
+    );
+  }
+
+  return success(res, formatProject(project), "Project reactivated");
+});

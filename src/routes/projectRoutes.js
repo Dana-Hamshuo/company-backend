@@ -18,4 +18,28 @@ router.delete("/:id",auth,auth.authorizeScheduler,projectController.deleteProjec
 router.patch("/:id", auth,auth.authorizeScheduler, projectController.updateProject)
 
 router.get("/:id",auth,projectController.getProjectById)
+
+router.post(
+  "/:id/complete",
+  auth,
+  auth.authorizeScheduler,
+  projectController.completeProject
+)
+
+router.post(
+  "/:id/pause",
+  auth,
+  auth.authorizeScheduler,
+  projectController.pauseProject
+)
+
+router.post(
+  "/:id/reactivate",
+  auth,
+  auth.authorizeScheduler,
+  projectController.reactivateProject
+)
+
+
+
 module.exports = router
