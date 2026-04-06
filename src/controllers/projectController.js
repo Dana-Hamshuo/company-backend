@@ -1,9 +1,11 @@
 const Project = require("../models/Project")
+const Task = require("../models/Task") 
 const mongoose = require("mongoose")
 const { success } = require("../utils/apiResponse")
 const asyncHandler = require("../utils/asyncHandler");
 const AppError = require("../utils/AppError")
 const formatProject = require("../utils/formatProject")
+const notificationService = require("../services/notificationService") 
 exports.createProject = asyncHandler(async(req,res,next)=>{
 
    const {
@@ -120,23 +122,24 @@ exports.completeProject = asyncHandler(async (req, res) => {
         lastModifiedAt: new Date()
       } 
     }
-  );
+  )
   const assignedUsers = await Task.distinct(
     "assignedUsers.userId", 
     { projectId: project._id }
-  );
-  if (assignedUsers.length > 0) {
+  )
+  if (assignedUsers && assignedUsers.length > 0) {
     await notificationService.notifyUsers(
       assignedUsers,
       `Project "${project.title}" has been completed`,
       "task_update",
       null,
       { projectId: project._id, action: "project_completed" }
-    );
+    )
   }
 
-  return success(res, formatProject(project), "Project completed");
-});
+  return success(res, formatProject(project), "Project completed")
+})
+
 exports.pauseProject = asyncHandler(async (req, res) => {
   const project = await Project.findById(req.params.id);
   
@@ -160,23 +163,24 @@ exports.pauseProject = asyncHandler(async (req, res) => {
         lastModifiedAt: new Date()
       } 
     }
-  );
+  )
+
   const assignedUsers = await Task.distinct(
     "assignedUsers.userId", 
     { projectId: project._id }
-  );
-  if (assignedUsers.length > 0) {
+  )
+  if (assignedUsers && assignedUsers.length > 0) {
     await notificationService.notifyUsers(
       assignedUsers,
       `Project "${project.title}" has been paused`,
       "delay",
       null,
       { projectId: project._id, action: "project_paused" }
-    );
+    )
   }
 
-  return success(res, formatProject(project), "Project paused");
-});
+  return success(res, formatProject(project), "Project paused")
+})
 
 exports.reactivateProject = asyncHandler(async (req, res) => {
   const project = await Project.findById(req.params.id);
@@ -202,13 +206,13 @@ exports.reactivateProject = asyncHandler(async (req, res) => {
         lastModifiedAt: new Date()
       } 
     }
-  );
+  )
   const assignedUsers = await Task.distinct(
     "assignedUsers.userId", 
     { projectId: project._id }
-  );
+  )
   
-  if (assignedUsers.length > 0) {
+  if (assignedUsers && assignedUsers.length > 0) {
     await notificationService.notifyUsers(
       assignedUsers,
       `Project "${project.title}" has been reactivated - you can resume work`,
@@ -220,8 +224,8 @@ exports.reactivateProject = asyncHandler(async (req, res) => {
         reactivatedBy: req.user._id,
         reactivatedAt: new Date()
       }
-    );
+    )
   }
-
+  
   return success(res, formatProject(project), "Project reactivated");
 });
