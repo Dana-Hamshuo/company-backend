@@ -45,7 +45,7 @@ exports.delayTask = asyncHandler(async (req, res, next) => {
 )
 const populatedTask = await Task.findById(task._id)
 .populate("assignedUsers.userId", "name");
-return success(res, formatTask(populatedTask), "task delayed")
+return success(res, formatTask(populatedTask), "task blocked")
 
 });
 exports.deleteTask = asyncHandler(async (req, res, next) => {
@@ -108,6 +108,14 @@ exports.getTasksByDateRange = asyncHandler(async (req, res, next) => {
 });
 
 exports.updateTask = asyncHandler(async (req, res, next) => {
+  if (req.body.status && !["pending", "done", "blocked"].includes(req.body.status)) {
+    throw new AppError(
+      "Invalid status. Must be: pending, done, or blocked",
+      400,
+      "VALIDATION_ERROR",
+      "status"
+    );
+  }
   const task = await taskService.updateTaskSafe(
    req.params.id,
    req.body

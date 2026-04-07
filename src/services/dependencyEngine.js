@@ -61,7 +61,7 @@ exports.propagateDelay = async (taskId, custom = {}) => {
     if (!task.schedule || task.schedule.length === 0) continue;
 
     task.schedule = shiftSchedule(task.schedule);
-    task.status = "delayed";
+    task.status = "blocked";
 
     await task.save();
 

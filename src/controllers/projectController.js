@@ -112,7 +112,7 @@ exports.completeProject = asyncHandler(async (req, res) => {
   await Task.updateMany(
     { 
       projectId: project._id, 
-      status: { $in: ["pending", "in_progress"] } 
+      status: { $in: ["pending","blocked" ] } 
     },
     { 
       $set: { 
@@ -153,7 +153,7 @@ exports.pauseProject = asyncHandler(async (req, res) => {
   await Task.updateMany(
     { 
       projectId: project._id, 
-      status: { $in: ["pending", "in_progress"] } 
+      status: { $in: ["pending"] } 
     },
     { 
       $set: { 
@@ -195,7 +195,7 @@ exports.reactivateProject = asyncHandler(async (req, res) => {
   await Task.updateMany(
     { 
       projectId: project._id, 
-      status: { $in: ["blocked", "delayed"] },
+      status: { $in: ["blocked"] },
       delayReason: "Project paused"
     },
     { 

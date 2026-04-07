@@ -218,7 +218,7 @@ exports.completeTask = async(taskId)=>{
       }
     }
     task.schedule = newSchedule;
-    task.status = "delayed";
+    task.status = "blocked";
     task.delayReason = reason;
     task.lastModifiedBy = user._id;
 
@@ -298,7 +298,7 @@ async function cascadeDelayTask(taskId, reason, custom, session) {
   }));
 
   task.schedule = newSchedule;
-  task.status = "delayed";
+  task.status = "blocked";
   task.delayReason = reason;
 
   await task.save({ session });
