@@ -133,6 +133,6 @@ exports.getTaskSchedule = asyncHandler(async (req, res, next) => {
   const populatedTask = await Task.findById(task._id)
   .populate("projectId", "title clientId")
   .populate("projectId.clientId", "name businessType")
-  .populate("assignedUsers.userId", "name");
+  .populate("assignedUsers.userId", "name email jobTitle");
   return success(res, formatTask(populatedTask),"success");
 });
