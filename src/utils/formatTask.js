@@ -48,9 +48,7 @@ function formatTask(task) {
     
     dependencies: (task.dependencies || []).map(dep => ({
       taskId: dep.taskId._id || dep.taskId || dep,
-      isRequired: dep.isRequired !== undefined ? dep.isRequired : true,
-      taskTitle: dep.taskId?.title || null,
-      taskStatus: dep.taskId?.status || null
+      isRequired: dep.isRequired !== undefined ? dep.isRequired : true
     })),
     
     schedule: task.schedule.map(s => ({
