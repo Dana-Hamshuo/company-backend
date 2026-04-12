@@ -13,7 +13,12 @@ function formatProject(project) {
       } : null,
       title: project.title,
       description: project.description,
-      status: project.status
+      status: project.status,
+      marketingPlan: project.marketingPlan || "",
+      contentCreation: project.contentCreation || "",
+      hasProfileManagement: project.hasProfileManagement || false,
+      hasAutomatedReply: project.hasAutomatedReply || false,
+      hasMonthlyReports: project.hasMonthlyReports || false,
     };
   }
   
