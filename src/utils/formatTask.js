@@ -41,15 +41,10 @@ function formatTask(task) {
     status: task.status,
     progress: task.progress,
     
-    assignedUsers: includeFullUsers
-      ? (task.assignedUsers || []).map(user => ({
-          id: user.userId._id || user.userId,
-          name: user.userId?.name || "Unknown",
-          email: user.userId?.email || null,
-          jobTitle: user.userId?.jobTitle || null,
-          isPrimary: user.isPrimary || false
-        }))
-      : (task.assignedUsers || []).map(user => user.userId._id || user.userId),
+    assignedUsers: task.assignedUsers.map(user => ({
+      id: user.userId._id || user.userId,
+      name: user.userId?.name || "Unknown"
+    })),
     
     dependencies: (task.dependencies || []).map(dep => ({
       taskId: dep.taskId || dep,
