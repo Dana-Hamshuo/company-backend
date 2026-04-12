@@ -43,9 +43,7 @@ function formatTask(task) {
     
     assignedUsers: task.assignedUsers.map(user => ({
       id: user.userId._id || user.userId,
-      name: user.userId?.name || "Unknown",
-      email: user.userId?.email || null,  
-      jobTitle: user.userId?.jobTitle || null,
+      name: user.userId?.name || "Unknown"
     })),
     
     dependencies: (task.dependencies || []).map(dep => ({
