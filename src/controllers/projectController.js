@@ -11,7 +11,12 @@ exports.createProject = asyncHandler(async(req,res,next)=>{
    const {
      clientId,
      title,
-     description
+     description,
+     marketingPlan,
+     contentCreation,
+     hasProfileManagement,
+     hasAutomatedReply,
+     hasMonthlyReports
    } = req.body
 
    if(!mongoose.Types.ObjectId.isValid(clientId)){
@@ -27,6 +32,11 @@ exports.createProject = asyncHandler(async(req,res,next)=>{
      clientId,
      title,
      description,
+     marketingPlan: marketingPlan || "",
+     contentCreation: contentCreation || "",
+     hasProfileManagement: hasProfileManagement || false,
+     hasAutomatedReply: hasAutomatedReply || false,
+     hasMonthlyReports: hasMonthlyReports || false,
      createdBy: req.user._id 
     })
 
@@ -66,7 +76,12 @@ exports.updateProject = asyncHandler(async (req, res, next) => {
     "description",
     "status",
     "clientRating",
-    "clientFeedback"
+    "clientFeedback",
+    "marketingPlan",
+    "contentCreation", 
+    "hasProfileManagement",
+    "hasAutomatedReply",
+    "hasMonthlyReports"
   ]
 
   for (const key of allowedFields) {

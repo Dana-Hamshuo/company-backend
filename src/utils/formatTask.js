@@ -43,12 +43,16 @@ function formatTask(task) {
     
     assignedUsers: task.assignedUsers.map(user => ({
       id: user.userId._id || user.userId,
-      name: user.userId?.name || "Unknown"
+      name: user.userId?.name || "Unknown",
+      email: user.userId?.email || null,  
+      jobTitle: user.userId?.jobTitle || null,
     })),
     
     dependencies: (task.dependencies || []).map(dep => ({
-      taskId: dep.taskId || dep,
-      isRequired: dep.isRequired !== undefined ? dep.isRequired : true
+      taskId: dep.taskId._id || dep.taskId || dep,
+      isRequired: dep.isRequired !== undefined ? dep.isRequired : true,
+      taskTitle: dep.taskId?.title || null,
+      taskStatus: dep.taskId?.status || null
     })),
     
     schedule: task.schedule.map(s => ({
