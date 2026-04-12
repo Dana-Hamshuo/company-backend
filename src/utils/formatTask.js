@@ -42,8 +42,14 @@ function formatTask(task) {
     progress: task.progress,
     
     assignedUsers: task.assignedUsers.map(user => ({
-      id: user.userId._id || user.userId,
-      name: user.userId?.name || "Unknown"
+      id: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
+      role: req.user.role,
+      jobTitle: req.user.jobTitle,
+      allowOverlap: req.user.allowOverlap,
+      maxParallelTasks: req.user.maxParallelTasks,
+      isActive: req.user.isActive
     })),
     
     dependencies: (task.dependencies || []).map(dep => ({
