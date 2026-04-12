@@ -38,10 +38,9 @@ function formatTask(task) {
       } : null
     } : null,
     
-    status: task.status,
-    progress: task.progress,
     
-    assignedUsers: task.assignedUsers.map(user => ({
+  status: task.status,
+  assignedUsers: task.assignedUsers.map(user => ({
       id: user.userId._id || user.userId,
       name: user.userId?.name || "Unknown"
     })),
