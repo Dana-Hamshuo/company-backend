@@ -6,6 +6,18 @@ const authorizeScheduler = auth.authorizeScheduler;
 const { createTaskValidation } = require("../validators/task/createTask.validation");
 const validate = require("../middlewares/validationMiddleware");
 
+router.get("/month", auth, taskController.getTasksByMonth)              
+router.get("/range", auth, taskController.getTasksByDateRange)        
+router.get("/user/:userId", auth, taskController.getTasksByUser)        
+
+router.get("/", auth, taskController.getAllTasks)                  
+
+router.get("/:id", auth, taskController.getTaskSchedule)             
+router.patch("/:id", auth, authorizeScheduler, taskController.updateTask)
+router.post("/:id/complete", auth, authorizeScheduler, taskController.completeTask)
+router.post("/:id/delay", auth, authorizeScheduler, taskController.delayTask)
+router.delete("/:id", auth, authorizeScheduler, taskController.deleteTask)
+
 router.post(
     "/",
     auth, 
@@ -13,26 +25,5 @@ router.post(
     ...createTaskValidation,
     validate,
     taskController.createTask
-  );
-
-
-router.post("/:id/delay",auth,authorizeScheduler,taskController.delayTask)
-
-router.get("/",auth,taskController.getAllTasks)
-
-router.get("/user/:userId", auth, taskController.getTasksByUser)
-
-router.get("/range", auth, taskController.getTasksByDateRange)
-
-router.get("/:id", auth, taskController.getTaskSchedule)
-
-router.get("/month", auth, taskController.getTasksByMonth)
-
-router.patch( "/:id",auth,
-  authorizeScheduler,taskController.updateTask)
-
-router.post("/:id/complete",auth,authorizeScheduler,taskController.completeTask)
-
-router.delete("/:id",auth,authorizeScheduler,taskController.deleteTask)
-
+);
 module.exports = router

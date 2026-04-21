@@ -55,12 +55,7 @@ exports.deleteTask = asyncHandler(async (req, res, next) => {
 
 });
 exports.getAllTasks = asyncHandler(async (req, res, next) => {
-  const { 
-    page = 1, 
-    limit = 20, 
-    status,
-    noPagination 
-  } = req.query;
+  const { status } = req.query;
 
   const query = {};
   
@@ -68,19 +63,12 @@ exports.getAllTasks = asyncHandler(async (req, res, next) => {
     query.status = status;
   }
 
-  let tasksQuery = Task.find(query)
+  const tasks = await Task.find(query)
     .select("title status schedule projectId assignedUsers dependencies progress delayReason createdAt updatedAt")
     .populate("projectId", "title clientId") 
     .populate("projectId.clientId", "name businessType notes")          
-    .populate("assignedUsers.userId", "name");
-
-  if (noPagination !== "true") {
-    tasksQuery = tasksQuery
-      .skip((page - 1) * limit)
-      .limit(Number(limit));
-  }
-
-  const tasks = await tasksQuery.lean();
+    .populate("assignedUsers.userId", "name")  
+    .lean();
   const formattedTasks = tasks.map(task => formatTask(task));
 
   return success(res, formattedTasks, "Tasks fetched");
