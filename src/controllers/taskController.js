@@ -55,17 +55,32 @@ exports.deleteTask = asyncHandler(async (req, res, next) => {
 
 });
 exports.getAllTasks = asyncHandler(async (req, res, next) => {
-  const { page = 1, limit = 20 } = req.query;
+  const { 
+    page = 1, 
+    limit = 20, 
+    status,
+    noPagination 
+  } = req.query;
 
-  const tasks = await Task.find()
+  const query = {};
+  
+  if (status) {
+    query.status = status;
+  }
+
+  let tasksQuery = Task.find(query)
     .select("title status schedule projectId assignedUsers dependencies progress delayReason createdAt updatedAt")
     .populate("projectId", "title clientId") 
     .populate("projectId.clientId", "name businessType notes")          
-    .populate("assignedUsers.userId", "name")  
-    .skip((page - 1) * limit)
-    .limit(Number(limit))
-    .lean();
+    .populate("assignedUsers.userId", "name");
 
+  if (noPagination !== "true") {
+    tasksQuery = tasksQuery
+      .skip((page - 1) * limit)
+      .limit(Number(limit));
+  }
+
+  const tasks = await tasksQuery.lean();
   const formattedTasks = tasks.map(task => formatTask(task));
 
   return success(res, formattedTasks, "Tasks fetched");
@@ -136,4 +151,44 @@ exports.getTaskSchedule = asyncHandler(async (req, res, next) => {
   .populate("assignedUsers.userId", "name email jobTitle")
   .populate("dependencies.taskId", "title status");
   return success(res, formatTask(populatedTask),"success");
+});
+
+
+
+exports.getTasksByMonth = asyncHandler(async (req, res, next) => {
+  const { year, month, status } = req.query;
+
+  if (!year || !month) {
+    throw new AppError(
+      "Year and month are required",
+      400,
+      "VALIDATION_ERROR",
+      "year, month"
+    );
+  }
+
+  const startDate = new Date(year, month - 1, 1);
+  const endDate = new Date(year, month, 0, 23, 59, 59);
+
+  const query = {
+    "schedule.date": {
+      $gte: startDate,
+      $lte: endDate
+    }
+  };
+
+  if (status) {
+    query.status = status;
+  }
+
+  const tasks = await Task.find(query)
+    .select("title status schedule projectId assignedUsers dependencies progress delayReason")
+    .populate("projectId", "title clientId")
+    .populate("projectId.clientId", "name businessType")
+    .populate("assignedUsers.userId", "name")
+    .lean();
+
+  const formattedTasks = tasks.map(task => formatTask(task));
+
+  return success(res, formattedTasks, `Tasks for ${year}-${month} fetched`);
 });

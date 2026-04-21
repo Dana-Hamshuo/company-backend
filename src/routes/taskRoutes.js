@@ -26,6 +26,8 @@ router.get("/range", auth, taskController.getTasksByDateRange)
 
 router.get("/:id", auth, taskController.getTaskSchedule)
 
+router.get("/month", auth, taskController.getTasksByMonth)
+
 router.patch( "/:id",auth,
   authorizeScheduler,taskController.updateTask)
 
