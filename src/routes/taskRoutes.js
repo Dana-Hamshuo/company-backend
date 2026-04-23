@@ -9,6 +9,7 @@ const validate = require("../middlewares/validationMiddleware");
 router.get("/month", auth, taskController.getTasksByMonth)              
 router.get("/range", auth, taskController.getTasksByDateRange)        
 router.get("/user/:userId", auth, taskController.getTasksByUser)        
+router.get("/my/pending-count", auth, taskController.getMyPendingTasksCount)
 
 router.get("/", auth, taskController.getAllTasks)                  
 

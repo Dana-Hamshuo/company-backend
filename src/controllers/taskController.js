@@ -179,3 +179,22 @@ exports.getTasksByMonth = asyncHandler(async (req, res, next) => {
 
   return success(res, formattedTasks, `Tasks for ${year}-${month} fetched`);
 });
+
+exports.getMyPendingTasksCount = asyncHandler(async (req, res, next) => {
+  const { userId } = req.query; 
+  if (!userId) {
+    throw new AppError(
+      "userId is required",
+      400,
+      "VALIDATION_ERROR",
+      "userId"
+    );
+  }
+
+  const count = await Task.countDocuments({
+    "assignedUsers.userId": new mongoose.Types.ObjectId(userId),
+    status: "pending"
+  });
+
+  return success(res, { count }, "Pending tasks count fetched");
+});
