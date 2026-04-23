@@ -181,7 +181,7 @@ exports.getTasksByMonth = asyncHandler(async (req, res, next) => {
   return success(res, formattedTasks, `Tasks for ${year}-${month} fetched`);
 });
 exports.getPendingTasksCount = asyncHandler(async (req, res, next) => {
-  const { userId } = req.query;
+  const { userId } = req.body
   const currentUserId = req.user._id;
   const userRole = req.user.role;
 
