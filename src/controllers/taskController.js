@@ -179,14 +179,36 @@ exports.getTasksByMonth = asyncHandler(async (req, res, next) => {
 
   return success(res, formattedTasks, `Tasks for ${year}-${month} fetched`);
 });
+exports.getPendingTasksCount = asyncHandler(async (req, res, next) => {
+  const { userId } = req.query;
+  const currentUserId = req.user._id;
+  const userRole = req.user.role;
 
-exports.getMyPendingTasksCount = asyncHandler(async (req, res, next) => {
-  const userId = req.user._id;
+  if (!userId) {
+    throw new AppError(
+      "userId is required",
+      400,
+      "VALIDATION_ERROR",
+      "userId"
+    );
+  }
+
+  if (userId !== currentUserId.toString() && userRole !== 'scheduler') {
+    throw new AppError(
+      "Access denied: You can only view your own tasks",
+      403,
+      "FORBIDDEN",
+      "permission"
+    );
+  }
 
   const count = await Task.countDocuments({
-    "assignedUsers.userId": userId,
+    "assignedUsers.userId": new mongoose.Types.ObjectId(userId),
     status: "pending"
   });
 
-  return success(res, { count }, "Pending tasks count fetched");
+  return res.status(200).json({
+    success: true,
+    count: count
+  });
 });
