@@ -208,8 +208,5 @@ exports.getPendingTasksCount = asyncHandler(async (req, res, next) => {
     status: "pending"
   });
 
-  return res.status(200).json({
-    success: true,
-    count: count
-  });
+  return success(res, count, "Pending tasks count fetched")
 });
