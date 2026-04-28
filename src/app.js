@@ -23,6 +23,7 @@ app.use("/api/tasks",taskRoutes)
 app.use("/api/calendar",calendarRoutes)
 app.use("/api/admin",adminRoutes)
 app.use("/api/notifications", notificationRoutes)
+app.use('/api/devices', require('./routes/deviceRoutes'));
 
 app.use((req, res) => {
     res.status(404).json({
