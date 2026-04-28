@@ -5,6 +5,7 @@ const admin = require('firebase-admin');
 const path = require('path');
 const fs = require('fs');
 
+
 const serviceAccountPath = path.join(__dirname, 'firebase-service-account.json');
 
 if (!fs.existsSync(serviceAccountPath)) {

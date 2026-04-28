@@ -1,46 +1,46 @@
-// src/controllers/notificationController.js
-const Notification = require("../models/Notification");
-const { success } = require("../utils/apiResponse")
-const asyncHandler = require("../utils/asyncHandler");
-const AppError = require("../utils/AppError");
+  // src/controllers/notificationController.js
+  const Notification = require("../models/Notification");
+  const { success } = require("../utils/apiResponse")
+  const asyncHandler = require("../utils/asyncHandler");
+  const AppError = require("../utils/AppError");
 
-exports.getMyNotifications = asyncHandler(async (req, res) => {
-  const notifications = await Notification.find({
-    userId: req.user._id
-  }).sort({ createdAt: -1 });
-
-   return success(res,notifications)
-});
-
-exports.markAsRead = asyncHandler(async (req, res) => {
-
-  const { id } = req.params;
-
-  const notification = await Notification.findOneAndUpdate(
-    {
-      _id: id,
+  exports.getMyNotifications = asyncHandler(async (req, res) => {
+    const notifications = await Notification.find({
       userId: req.user._id
-    },
-    {
-      isRead: true
-    },
-    {
-      new: true
-    }
-  );
+    }).sort({ createdAt: -1 });
 
-  if (!notification) {
-    throw new AppError("Project not found", 404, "NOT_FOUND", "id");
-  }
-
-  return success(res, notification, "Marked as read");});
-
-  exports.markAllAsRead = asyncHandler(async (req, res) => {
-
-    await Notification.updateMany(
-      { userId: req.user._id, isRead: false },
-      { isRead: true }
-    );
-  
-    return success(res, null, "All notifications marked as read");
+    return success(res,notifications)
   });
+
+  exports.markAsRead = asyncHandler(async (req, res) => {
+
+    const { id } = req.params;
+
+    const notification = await Notification.findOneAndUpdate(
+      {
+        _id: id,
+        userId: req.user._id
+      },
+      {
+        isRead: true
+      },
+      {
+        new: true
+      }
+    );
+
+    if (!notification) {
+      throw new AppError("Project not found", 404, "NOT_FOUND", "id");
+    }
+
+    return success(res, notification, "Marked as read");});
+
+    exports.markAllAsRead = asyncHandler(async (req, res) => {
+
+      await Notification.updateMany(
+        { userId: req.user._id, isRead: false },
+        { isRead: true }
+      );
+    
+      return success(res, null, "All notifications marked as read");
+    });

@@ -1,13 +1,15 @@
-//src/services/notificationService.js
-const User = require("../models/User")
-const Notification = require("../models/Notification")
+const Notification = require("../models/Notification");
+const DeviceToken = require("../models/DeviceToken");
 const AppError = require("../utils/AppError");
 
+const firebaseConfig = require("../config/firebase");
+const firebaseInitialized = firebaseConfig.initialized;
+const messaging = firebaseConfig.messaging;
+
 exports.notifyUsers = async (userIds, message, type, taskId, meta = {}) => {
+  if (!userIds || userIds.length === 0) return;
 
-  if (!userIds || userIds.length === 0) return
-
-  const uniqueUsers = [...new Set(userIds.map(id => id.toString()))]
+  const uniqueUsers = [...new Set(userIds.map(id => id.toString()))];
 
   const notifications = uniqueUsers.map(userId => ({
     userId,
@@ -15,13 +17,14 @@ exports.notifyUsers = async (userIds, message, type, taskId, meta = {}) => {
     type,
     taskId,
     meta
-  }))
+  }));
 
-  await Notification.insertMany(notifications)
+  await Notification.insertMany(notifications);
+
   if (firebaseInitialized) {
     await this.sendPushNotifications(uniqueUsers, message, meta);
   }
-}
+};
 
 exports.sendPushNotifications = async (userIds, title, meta = {}) => {
   try {
@@ -30,7 +33,7 @@ exports.sendPushNotifications = async (userIds, title, meta = {}) => {
     });
 
     if (devices.length === 0) {
-      console.log('📭 No device tokens found for push notifications');
+      console.log('No device tokens found for push notifications');
       return;
     }
 
@@ -38,14 +41,13 @@ exports.sendPushNotifications = async (userIds, title, meta = {}) => {
       token: device.token,
       notification: {
         title: title,
-        body: meta.body || title,  // إذا في body مخصص استخدمه
+        body: meta.body || title,
       },
       data: {
         ...meta,
         type: meta.type || 'general',
         timestamp: new Date().toISOString()
       },
-      // إعدادات خاصة بـ Android
       android: {
         priority: 'high',
         notification: {
@@ -54,7 +56,6 @@ exports.sendPushNotifications = async (userIds, title, meta = {}) => {
           clickAction: 'FLUTTER_NOTIFICATION_CLICK'
         }
       },
-      // إعدادات خاصة بـ iOS
       apns: {
         payload: {
           aps: {
@@ -98,7 +99,6 @@ exports.cleanupInvalidTokens = async (response, devices) => {
   }
 };
 
-
 exports.chunkArray = (array, size) => {
   const chunks = [];
   for (let i = 0; i < array.length; i += size) {
@@ -107,86 +107,69 @@ exports.chunkArray = (array, size) => {
   return chunks;
 };
 
-// exports.notifyTaskCreated = async(task)=>{
-//   const userIds = task.assignedUsers.map(u=>u.userId)
-
-//   await exports.notifyUsers(
-//     userIds,
-//     `New task assigned: ${task.title}`,
-//     "new_task",
-//     task._id
-//   )
-// }
-
-
-// exports.notifyTaskCompleted = async(task)=>{
-//   const userIds = task.assignedUsers.map(u=>u.userId)
-
-//   await exports.notifyUsers(
-//     userIds,
-//     `Task completed: ${task.title}`,
-//     "task_update",
-//     task._id
-//   )
-// }
-
-
-// exports.notifyTaskDelayed = async(task)=>{
-//   console.log("EVENT FIRED:", task.title)
-//   const userIds = task.assignedUsers.map(u=>u.userId)
-
-//   await exports.notifyUsers(
-//     userIds,
-//     `Task delayed: ${task.title}`,
-//     "delay",
-//     task._id,
-//     {reason:task.delayReason}
-//   )
-// }
-
 exports.notifyTaskCreated = async (task) => {
-
-  const userIds = task.assignedUsers.map(u => u.userId)
-
+  const userIds = task.assignedUsers.map(u => u.userId);
+  
   await exports.notifyUsers(
     userIds,
-    `New task assigned: ${task.title}`,
+    "Task assigned",
     "new_task",
-    task._id
-  )
-}
+    task._id,
+    { 
+      body: "You have been assigned to a new task by the scheduler",
+      taskId: task._id.toString(),
+      type: "new_task"
+    }
+  );
+};
+
 exports.notifyTaskCompleted = async (task) => {
-
-  const userIds = task.assignedUsers.map(u => u.userId)
-
+  const userIds = task.assignedUsers.map(u => u.userId);
+  
   await exports.notifyUsers(
     userIds,
-    `Task completed: ${task.title}`,
+    "Status changed",
     "task_update",
-    task._id
-  )
-}
+    task._id,
+    { 
+      body: "The task assigned to you has been completed",
+      taskId: task._id.toString(),
+      type: "task_update"
+    }
+  );
+};
 
 exports.notifyTaskDelayed = async (task) => {
-
-  const userIds = task.assignedUsers.map(u => u.userId)
-
+  const userIds = task.assignedUsers.map(u => u.userId);
+  
   await exports.notifyUsers(
     userIds,
-    `Task delayed: ${task.title}`,
+    "Task delayed",
     "delay",
     task._id,
-    { reason: task.delayReason }
-  )
-}
+    { 
+      body: task.delayReason || "The task has been delayed",
+      reason: task.delayReason,
+      taskId: task._id.toString(),
+      type: "delay"
+    }
+  );
+};
+
 exports.notifyDependencyReady = async (task) => {
-
-  const userIds = task.assignedUsers.map(u => u.userId.toString())
-
+  const userIds = task.assignedUsers.map(u => u.userId.toString());
+  
   await exports.notifyUsers(
     userIds,
-    `You can now start task: ${task.title}`,
+    "Dependency resolved",
     "dependency",
-    task._id
-  )
-}
+    task._id,
+    { 
+      body: "Previous tasks are completed, you can start now",
+      taskId: task._id.toString(),
+      type: "dependency"
+    }
+  );
+};
+
+module.exports = exports;
