@@ -10,3 +10,8 @@ eventBus.on("task.completed", async(task)=>{
 eventBus.on("task.delayed", async(task)=>{
  await notificationService.notifyTaskDelayed(task)
 })
+eventBus.on("dependency.ready", async (task) => {
+    await notificationService.notifyDependencyReady(task)
+  })
+
+  module.exports = eventBus
