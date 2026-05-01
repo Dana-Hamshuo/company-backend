@@ -25,9 +25,7 @@ exports.login = asyncHandler(async (req, res, next) => {
     },"Login successful")});
 
     exports.getMe = asyncHandler(async (req, res) => {
-      const token = authService.generateToken(req.user._id);
       return success(res, {
-        token: token,
         user: {
           id: req.user._id,
           name: req.user.name,
