@@ -182,9 +182,7 @@ exports.getTasksByMonth = asyncHandler(async (req, res, next) => {
 });
 exports.getPendingTasksCount = asyncHandler(async (req, res, next) => {
   const { userId } = req.body
-  const currentUserId = req.user._id;
-  const userRole = req.user.role;
-
+  
   if (!userId) {
     throw new AppError(
       "userId is required",
@@ -194,12 +192,13 @@ exports.getPendingTasksCount = asyncHandler(async (req, res, next) => {
     );
   }
 
-  if (userId !== currentUserId.toString() && userRole !== 'scheduler') {
+
+  if (!mongoose.Types.ObjectId.isValid(userId)) {
     throw new AppError(
-      "Access denied: You can only view your own tasks",
-      403,
-      "FORBIDDEN",
-      "permission"
+      "Invalid userId format",
+      400,
+      "VALIDATION_ERROR",
+      "userId"
     );
   }
 
