@@ -29,12 +29,12 @@ exports.login = asyncHandler(async (req, res, next) => {
         user: {
           id: req.user._id,
           name: req.user.name,
-          email: req.user.email,
+          // email: req.user.email,
           role: req.user.role,
-          jobTitle: req.user.jobTitle,
-          allowOverlap: req.user.allowOverlap,
-          maxParallelTasks: req.user.maxParallelTasks,
-          isActive: req.user.isActive
+          // jobTitle: req.user.jobTitle,
+          // allowOverlap: req.user.allowOverlap,
+          // maxParallelTasks: req.user.maxParallelTasks,
+          // isActive: req.user.isActive
         }
       }, "User fetched");
     });
