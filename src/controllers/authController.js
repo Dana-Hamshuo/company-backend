@@ -25,14 +25,18 @@ exports.login = asyncHandler(async (req, res, next) => {
     },"Login successful")});
 
     exports.getMe = asyncHandler(async (req, res) => {
+      const token = authService.generateToken(req.user._id);
       return success(res, {
-        id: req.user._id,
-        name: req.user.name,
-        email: req.user.email,
-        role: req.user.role,
-        jobTitle: req.user.jobTitle,
-        allowOverlap: req.user.allowOverlap,
-        maxParallelTasks: req.user.maxParallelTasks,
-        isActive: req.user.isActive
+        token: token,
+        user: {
+          id: req.user._id,
+          name: req.user.name,
+          email: req.user.email,
+          role: req.user.role,
+          jobTitle: req.user.jobTitle,
+          allowOverlap: req.user.allowOverlap,
+          maxParallelTasks: req.user.maxParallelTasks,
+          isActive: req.user.isActive
+        }
       }, "User fetched");
     });

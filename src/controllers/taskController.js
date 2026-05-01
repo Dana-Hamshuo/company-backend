@@ -181,19 +181,28 @@ exports.getTasksByMonth = asyncHandler(async (req, res, next) => {
   return success(res, formattedTasks, `Tasks for ${year}-${month} fetched`);
 });
 exports.getPendingTasksCount = asyncHandler(async (req, res, next) => {
-  const { userId } = req.body
-  
-  if (!userId) {
-    throw new AppError(
-      "userId is required",
-      400,
-      "VALIDATION_ERROR",
-      "userId"
-    );
+  const { userId } = req.body; 
+  const currentUserId = req.user._id.toString();
+  const userRole = req.user.role; 
+
+
+  const isSelfQuery = !userId || userId === currentUserId;
+  const targetUserId = isSelfQuery ? currentUserId : userId;
+
+  if (!isSelfQuery) {
+    const allowedRoles = ['scheduler', 'team'];
+    if (!allowedRoles.includes(userRole)) {
+      throw new AppError(
+        "Access denied: You can only view your own tasks",
+        403,
+        "FORBIDDEN",
+        "permission"
+      );
+    }
   }
 
 
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
+  if (!mongoose.Types.ObjectId.isValid(targetUserId)) {
     throw new AppError(
       "Invalid userId format",
       400,
@@ -203,7 +212,7 @@ exports.getPendingTasksCount = asyncHandler(async (req, res, next) => {
   }
 
   const count = await Task.countDocuments({
-    "assignedUsers.userId": new mongoose.Types.ObjectId(userId),
+    "assignedUsers.userId": new mongoose.Types.ObjectId(targetUserId),
     status: "pending"
   });
 
