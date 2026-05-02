@@ -18,7 +18,7 @@ A comprehensive backend system for managing tasks, employees, and real-time noti
 -  Automated notification system
 -  Device token management for mobile apps
 -  Work hours validation and overlap prevention
--  Task status tracking (Pending, In Progress, Blocked, Completed)
+-  Task status tracking (Pending, Blocked, Completed)
 
 ##  Tech Stack
 
