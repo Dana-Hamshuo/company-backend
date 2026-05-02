@@ -6,7 +6,7 @@ A comprehensive backend system for managing tasks, employees, and real-time noti
 
 ### Core Functionality
 - **Task Management**: Create, assign, track, and manage tasks with dependencies
-- **User Management**: Multi-role authentication (Scheduler, Team Member, Manager)
+- **User Management**: Multi-role authentication (Scheduler, Team Member)
 - **Real-time Notifications**: Push notifications via Firebase Cloud Messaging
 - **Schedule Management**: Date-based task scheduling with conflict detection
 - **Project Management**: Organize tasks by projects and clients
