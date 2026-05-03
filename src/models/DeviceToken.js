@@ -48,7 +48,7 @@ deviceTokenSchema.statics.registerToken = async function (userId, token, deviceT
       userId,
       token,
       deviceType: deviceType || 'android',
-      lastSeen: new Date() 
+      lastUsed: new Date() 
     },
     {
       new: true,            
