@@ -148,28 +148,35 @@ exports.completeTask = async(taskId)=>{
 
 
 
-   exports.deleteTask = async(taskId)=>{
+   exports.deleteTask = async (taskId) => {
     if (!mongoose.Types.ObjectId.isValid(taskId)) {
       throw new AppError("Invalid task ID", 400, "VALIDATION_ERROR", "id");
     }
-    const task = await Task.findById(taskId);
   
+   const task = await Task.findById(taskId);
     if (!task) {
       throw new AppError("Task not found", 404, "NOT_FOUND", "id");
     }
+  
     assertTaskIsModifiable(task);
-    const dependents = await Task.find({ "dependencies.taskId": taskId });
-    const validDependents = dependents.filter(task => 
-      task.dependencies?.some(dep => 
-        dep?.taskId && mongoose.Types.ObjectId.isValid(dep.taskId)
-      )
-    );
-    if (validDependents.length > 0) {
-      throw new AppError("cannot delete task with dependencies", 409, "CONFLICT_ERROR", "taskId");
+  
+    const hasDependents = await Task.exists({
+      "dependencies.taskId": new mongoose.Types.ObjectId(taskId)
+    });
+  
+    if (hasDependents) {
+      throw new AppError(
+        "Cannot delete task with dependencies",
+        409,
+        "CONFLICT_ERROR",
+        "taskId"
+      );
     }
   
-    await Task.findByIdAndDelete(taskId)
-  }
+    await Task.findByIdAndDelete(taskId);
+    
+    return { success: true, message: "Task deleted" };
+  };
 
   exports.markTaskDelayed = async(taskId, reason, custom = {},user)=>{
 

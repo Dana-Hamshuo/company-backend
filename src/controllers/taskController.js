@@ -49,16 +49,19 @@ const populatedTask = await Task.findById(task._id)
 return success(res, formatTask(populatedTask), "task blocked")
 
 });
+
 exports.deleteTask = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
-  if (!id || !require('mongoose').Types.ObjectId.isValid(id)) {
+  if (!id || !mongoose.Types.ObjectId.isValid(id)) {
     throw new AppError("Invalid task ID", 400, "VALIDATION_ERROR", "id");
   }
 
   await taskService.deleteTask(id);
 
+  return success(res, { message: "Task deleted successfully" }, "Task deleted");
 });
+
 exports.getAllTasks = asyncHandler(async (req, res, next) => {
   const { status } = req.query;
 

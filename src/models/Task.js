@@ -67,5 +67,6 @@ lastModifiedAt: Date
 
 taskSchema.index({ "assignedUsers.userId":1 })
 taskSchema.index({ "schedule.date":1 })
+taskSchema.index({ "dependencies.taskId": 1 });
 
 module.exports = mongoose.model("Task",taskSchema);
