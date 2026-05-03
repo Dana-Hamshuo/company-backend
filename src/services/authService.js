@@ -24,7 +24,7 @@ exports.register = async (data) => {
     throw new AppError("Email is required", 400, "VALIDATION_ERROR", "email");
   }
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   if (!emailRegex.test(email)) {
     throw new AppError("Invalid email format", 400, "VALIDATION_ERROR", "email");
   }
