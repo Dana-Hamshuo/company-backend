@@ -34,10 +34,28 @@ const deviceTokenSchema = new mongoose.Schema({
 
 deviceTokenSchema.index({ userId: 1, deviceType: 1 });
 
-deviceTokenSchema.statics.registerToken = async function(userId, token, deviceType) {
-  await this.findOneAndDelete({ userId, deviceType });
+// deviceTokenSchema.statics.registerToken = async function(userId, token, deviceType) {
+//   await this.findOneAndDelete({ userId, deviceType });
   
-  return this.create({ userId, token, deviceType });
+//   return this.create({ userId, token, deviceType });
+// };
+// src/models/DeviceToken.js
+
+DeviceTokenSchema.statics.registerToken = async function (userId, token, deviceType) {
+  return await this.findOneAndUpdate(
+    { token }, 
+    {
+      userId,
+      token,
+      deviceType: deviceType || 'android',
+      lastSeen: new Date() 
+    },
+    {
+      new: true,            
+      upsert: true,           
+      setDefaultsOnInsert: true 
+    }
+  );
 };
 
 module.exports = mongoose.model('DeviceToken', deviceTokenSchema);
