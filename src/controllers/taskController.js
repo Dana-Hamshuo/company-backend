@@ -50,9 +50,13 @@ return success(res, formatTask(populatedTask), "task blocked")
 
 });
 exports.deleteTask = asyncHandler(async (req, res, next) => {
-  await taskService.deleteTask(req.params.id)
+  const { id } = req.params;
 
-  return success(res,"task deleted") 
+  if (!id || !require('mongoose').Types.ObjectId.isValid(id)) {
+    throw new AppError("Invalid task ID", 400, "VALIDATION_ERROR", "id");
+  }
+
+  await taskService.deleteTask(id);
 
 });
 exports.getAllTasks = asyncHandler(async (req, res, next) => {
