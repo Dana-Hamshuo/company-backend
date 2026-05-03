@@ -59,7 +59,7 @@ exports.deleteTask = asyncHandler(async (req, res, next) => {
 
   await taskService.deleteTask(id);
 
-  return success(res, { message: "Task deleted successfully" }, "Task deleted");
+  return success(res, null, "task deleted");
 });
 
 exports.getAllTasks = asyncHandler(async (req, res, next) => {

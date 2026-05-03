@@ -13,9 +13,9 @@ exports.validateSchedule = (schedule) => {
   for (const day of schedule) {
     const dateObj = new Date(day.date);
 
-    validateWorkDay(dateObj);
+    // validateWorkDay(dateObj);
 
-    validateWorkTime(day.startTime, day.endTime);
+    // validateWorkTime(day.startTime, day.endTime);
 
     const key = toDateKey(dateObj);
     if (datesSet.has(key)) {
