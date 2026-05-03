@@ -152,6 +152,11 @@ exports.completeTask = async(taskId)=>{
     if (!mongoose.Types.ObjectId.isValid(taskId)) {
       throw new AppError("Invalid task ID", 400, "VALIDATION_ERROR", "id");
     }
+    const task = await Task.findById(taskId);
+  
+    if (!task) {
+      throw new AppError("Task not found", 404, "NOT_FOUND", "id");
+    }
     assertTaskIsModifiable(task);
     const dependents = await Task.find({ "dependencies.taskId": taskId });
     const validDependents = dependents.filter(task => 
