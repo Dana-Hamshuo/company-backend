@@ -45,13 +45,13 @@ exports.createProject = asyncHandler(async(req,res,next)=>{
 });
 exports.getProjects = asyncHandler(async (req, res, next) => {
 
-  const { page = 1, limit = 20 } = req.query
+  // const { page = 1, limit = 20 } = req.query
 
   const projects = await Project.find()
     .populate("clientId", "name")
     .populate("createdBy", "name")
-    .skip((page - 1) * limit)
-    .limit(Number(limit))
+    // .skip((page - 1) * limit)
+    // .limit(Number(limit))
 
   return success(res, projects.map(formatProject), "fetched projects")
 

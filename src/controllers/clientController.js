@@ -25,11 +25,11 @@ exports.createClient =asyncHandler(async(req,res,next)=>{
 });
 exports.getClients = asyncHandler(async (req, res, next) => {
 
-  const { page = 1, limit = 20 } = req.query
+  // const { page = 1, limit = 20 } = req.query
 
   const clients = await Client.find()
-    .skip((page - 1) * limit)
-    .limit(Number(limit))
+    // .skip((page - 1) * limit)
+    // .limit(Number(limit))
 
   return success(res, clients, "fetched clients")
 
