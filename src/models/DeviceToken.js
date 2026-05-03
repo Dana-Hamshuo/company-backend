@@ -41,7 +41,7 @@ deviceTokenSchema.index({ userId: 1, deviceType: 1 });
 // };
 // src/models/DeviceToken.js
 
-DeviceTokenSchema.statics.registerToken = async function (userId, token, deviceType) {
+deviceTokenSchema.statics.registerToken = async function (userId, token, deviceType) {
   return await this.findOneAndUpdate(
     { token }, 
     {
