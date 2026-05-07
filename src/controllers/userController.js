@@ -13,27 +13,37 @@ exports.createUser = asyncHandler(async (req,res,next)=>{
 });
 
 exports.getUsers = asyncHandler(async (req, res) => {
-   const currentUserEmail = req.user?.email?.toLowerCase() || '';
-   const isCurrentUserAdmin = currentUserEmail.includes('admin');
- 
-   const query = {};
-   
-   if (!isCurrentUserAdmin) {
-     query.email = { $not: /admin/i };
-   }
- 
-   const selectFields = isCurrentUserAdmin
-     ? '_id name email role jobTitle allowOverlap maxParallelTasks isActive createdAt updatedAt'
-     : '_id name email role jobTitle isActive';
- 
-   const users = await User.find(query)
-     .select(selectFields)
-     .sort({ createdAt: -1 })
-     .lean();
- 
-   return success(res, users, 'Users fetched');
- });
- 
+
+  const currentUserEmail = req.user?.email?.toLowerCase() || '';
+
+  const allowedTestAdmins = [
+    'admin@admin.com',
+    'admin2@admin.com'
+  ];
+
+  const canSeeHiddenAdmins =
+    allowedTestAdmins.includes(currentUserEmail);
+
+  const query = {};
+
+  if (!canSeeHiddenAdmins) {
+    query.email = {
+      $nin: ['admin@admin.com', 'admin2@admin.com']
+    };
+  }
+
+  const selectFields = canSeeHiddenAdmins
+    ? '_id name email role jobTitle allowOverlap maxParallelTasks isActive createdAt updatedAt'
+    : '_id name email role jobTitle isActive';
+
+  const users = await User.find(query)
+    .select(selectFields)
+    .sort({ createdAt: -1 })
+    .lean();
+
+  return success(res, users, 'Users fetched');
+});
+
 exports.deleteUser = asyncHandler(async(req,res,next)=>{
 
    const userId = req.params.id
