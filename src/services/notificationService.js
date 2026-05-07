@@ -105,6 +105,14 @@ exports.notifyUsers = async (userIds, message, type, taskId, meta = {}) => {
 // };
 exports.sendPushNotifications = async (userIds, title, meta = {}) => {
   try {
+    console.log('[PUSH DEBUG] Starting sendPushNotifications', {
+      firebaseInitialized,
+      messagingExists: !!messaging,
+      messagingType: typeof messaging,
+      sendMulticastType: typeof messaging?.sendMulticast,
+      userIdsCount: userIds?.length
+    });
+
     if (!firebaseInitialized || !messaging) {
       console.error('Firebase not initialized - skipping push');
       return;
@@ -167,6 +175,13 @@ exports.sendPushNotifications = async (userIds, title, meta = {}) => {
     });
 
     const response = await messaging.sendMulticast(message);
+
+    console.log('[PUSH DEBUG] About to call sendMulticast', {
+      messageType: typeof message,
+      tokenCount: message.tokens?.length,
+      messagingType: typeof messaging,
+      sendMulticastType: typeof messaging?.sendMulticast
+    });
     
     console.log(`Push: ${response.successCount} succeeded, ${response.failureCount} failed`);
     
@@ -183,9 +198,11 @@ exports.sendPushNotifications = async (userIds, title, meta = {}) => {
     }
 
   } catch (error) {
-    console.error('Push error:', {
+    console.error('[PUSH ERROR] Unhandled error:', {
+      name: error.name,
       message: error.message,
       code: error.code,
+      type: typeof error,
       stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }

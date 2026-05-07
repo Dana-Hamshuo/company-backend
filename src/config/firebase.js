@@ -19,6 +19,16 @@ try {
     });
     
     messaging = admin.messaging();
+
+    console.log('[FIREBASE DEBUG] Messaging object:', {
+      type: typeof messaging,
+      hasSendMulticast: typeof messaging?.sendMulticast,
+      hasSendEach: typeof messaging?.sendEach,
+      hasSend: typeof messaging?.send
+    });
+
+
+
     initialized = true;
     console.log(' Firebase initialized from Render secret file');
   } 
