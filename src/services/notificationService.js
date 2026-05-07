@@ -29,55 +29,61 @@ exports.notifyUsers = async (userIds, message, type, taskId, meta = {}) => {
 exports.sendPushNotifications = async (userIds, title, meta = {}) => {
   try {
     const devices = await DeviceToken.find({ 
-      userId: { $in: userIds } 
-    });
+      userId: { $in: userIds },
+      token: { $exists: true, $ne: '', $ne: null }
+    }).select('token');
 
-    if (devices.length === 0) {
-      console.log('No device tokens found for push notifications');
+    if (!devices || devices.length === 0) {
+      console.log(' No valid device tokens found');
       return;
     }
 
-    const messages = devices.map(device => ({
-      token: device.token,
-      notification: {
-        title: title,
-        body: meta.body || title,
-      },
-      data: {
-        ...meta,
-        type: meta.type || 'general',
-        timestamp: new Date().toISOString()
-      },
-      android: {
-        priority: 'high',
+    const messages = devices
+      .filter(d => d?.token?.trim())  // فلتر التوكن الفاضي
+      .map(device => ({
+        token: device.token.trim(),
+        
         notification: {
-          channelId: 'default',
-          sound: 'default',
-          clickAction: 'FLUTTER_NOTIFICATION_CLICK'
-        }
-      },
-      apns: {
-        payload: {
-          aps: {
+          title: title || 'Notification',
+          body: meta?.body || title || 'You have a new update',
+        },
+        
+        data: {  
+          ...meta,
+          type: meta?.type || 'general',
+          timestamp: new Date().toISOString()
+        },
+        
+        android: {
+          priority: 'high',
+          notification: {
+            channelId: 'default',
             sound: 'default',
-            badge: 1,
-            category: 'TASK_NOTIFICATION'
+            clickAction: 'FLUTTER_NOTIFICATION_CLICK'
+          }
+        },
+        
+        apns: {
+          payload: {
+            aps: {
+              sound: 'default',
+              badge: 1,
+              category: 'TASK_NOTIFICATION'
+            }
           }
         }
-      }
-    }));
+      }));
 
-    const chunks = this.chunkArray(messages, 500);
+    if (messages.length === 0) return;
+
+    const response = await messaging.sendEachForMulticast(messages);
     
-    for (const chunk of chunks) {
-      const response = await messaging.sendEachForMulticast(chunk);
-      console.log(`Push sent: ${response.successCount} succeeded, ${response.failureCount} failed`);
-      
-      await this.cleanupInvalidTokens(response, devices);
-    }
+    console.log(` Push: ${response.successCount} ok, ${response.failureCount} failed`);
+    
+    await this.cleanupInvalidTokens(response, devices);
 
   } catch (error) {
-    console.error('Error sending push notifications:', error.message);
+    console.error(' Push error:', error.message);
   }
 };
 
