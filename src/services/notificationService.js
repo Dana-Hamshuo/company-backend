@@ -26,8 +26,90 @@ exports.notifyUsers = async (userIds, message, type, taskId, meta = {}) => {
   }
 };
 
+// exports.sendPushNotifications = async (userIds, title, meta = {}) => {
+//   try {
+//     const devices = await DeviceToken.find({ 
+//       userId: { $in: userIds },
+//       token: { $exists: true, $ne: '', $ne: null }
+//     }).select('token');
+
+//     if (!devices || devices.length === 0) {
+//       console.log('No valid device tokens found');
+//       return;
+//     }
+
+//     const messages = devices
+//       .filter(d => d?.token?.trim())
+//       .map(device => {
+//         const message = {
+//           token: device.token.trim(),
+//           notification: {
+//             title: title || 'Notification',
+//             body: meta?.body || title || 'You have a new update',
+//           },
+//           data: {
+//             ...meta,
+//             type: meta?.type || 'general',
+//             timestamp: new Date().toISOString()
+//           }
+//         };
+
+//         if (device.deviceType === 'android') {
+//           message.android = {
+//             priority: 'high',
+//             notification: {
+//               channelId: 'default',
+//               sound: 'default',
+//               clickAction: 'FLUTTER_NOTIFICATION_CLICK'
+//             }
+//           };
+//         }
+
+//         if (device.deviceType === 'ios') {
+//           message.apns = {
+//             payload: {
+//               aps: {
+//                 sound: 'default',
+//                 badge: 1,
+//                 category: 'TASK_NOTIFICATION'
+//               }
+//             }
+//           };
+//         }
+
+//         return message;
+//       });
+
+//     if (messages.length === 0) {
+//       console.log('No valid messages to send');
+//       return;
+//     }
+
+//     console.log('Sending push with messages:', JSON.stringify(messages.slice(0, 1), null, 2));
+
+//     if (!messaging || typeof messaging.sendEachForMulticast !== 'function') {
+//       console.error('Firebase messaging not initialized');
+//       return;
+//     }
+
+//     const response = await messaging.sendEachForMulticast(messages);
+    
+//     console.log(`Push: ${response.successCount} ok, ${response.failureCount} failed`);
+    
+//     await this.cleanupInvalidTokens(response, devices);
+
+//   } catch (error) {
+//     console.error('Push error:', error.message, error.stack);
+//   }
+
+// };
 exports.sendPushNotifications = async (userIds, title, meta = {}) => {
   try {
+    if (!firebaseInitialized || !messaging) {
+      console.error('Firebase not initialized - skipping push');
+      return;
+    }
+
     const devices = await DeviceToken.find({ 
       userId: { $in: userIds },
       token: { $exists: true, $ne: '', $ne: null }
@@ -38,68 +120,74 @@ exports.sendPushNotifications = async (userIds, title, meta = {}) => {
       return;
     }
 
-    const messages = devices
-      .filter(d => d?.token?.trim())
-      .map(device => {
-        const message = {
-          token: device.token.trim(),
-          notification: {
-            title: title || 'Notification',
-            body: meta?.body || title || 'You have a new update',
-          },
-          data: {
-            ...meta,
-            type: meta?.type || 'general',
-            timestamp: new Date().toISOString()
+    const tokens = devices
+      .map(d => d.token?.trim())
+      .filter(t => t && t.length > 0);
+
+    if (tokens.length === 0) {
+      console.log('No valid tokens after filtering');
+      return;
+    }
+
+    const message = {
+      notification: {
+        title: title || 'Notification',
+        body: meta?.body || title || 'You have a new update',
+      },
+      data: {
+        ...meta,
+        type: meta?.type || 'general',
+        timestamp: new Date().toISOString()
+      },
+      tokens: tokens,
+      android: {
+        priority: 'high',
+        notification: {
+          channelId: 'default',
+          sound: 'default',
+          clickAction: 'FLUTTER_NOTIFICATION_CLICK'
+        }
+      },
+      apns: {
+        payload: {
+          aps: {
+            sound: 'default',
+            badge: 1,
+            category: 'TASK_NOTIFICATION'
           }
-        };
-
-        if (device.deviceType === 'android') {
-          message.android = {
-            priority: 'high',
-            notification: {
-              channelId: 'default',
-              sound: 'default',
-              clickAction: 'FLUTTER_NOTIFICATION_CLICK'
-            }
-          };
         }
+      }
+    };
 
-        if (device.deviceType === 'ios') {
-          message.apns = {
-            payload: {
-              aps: {
-                sound: 'default',
-                badge: 1,
-                category: 'TASK_NOTIFICATION'
-              }
-            }
-          };
-        }
+    console.log('Sending multicast with:', {
+      tokenCount: tokens.length,
+      firstToken: tokens[0]?.substring(0, 20) + '...',
+      hasNotification: !!message.notification?.title,
+      hasData: !!message.data
+    });
 
-        return message;
-      });
-
-    if (messages.length === 0) {
-      console.log('No valid messages to send');
-      return;
-    }
-
-    console.log('Sending push with messages:', JSON.stringify(messages.slice(0, 1), null, 2));
-
-    if (!messaging || typeof messaging.sendEachForMulticast !== 'function') {
-      console.error('Firebase messaging not initialized');
-      return;
-    }
-
-    const response = await messaging.sendEachForMulticast(messages);
+    const response = await messaging.sendMulticast(message);
     
-    console.log(`Push: ${response.successCount} ok, ${response.failureCount} failed`);
+    console.log(`Push: ${response.successCount} succeeded, ${response.failureCount} failed`);
     
-    await this.cleanupInvalidTokens(response, devices);
+    if (response.failureCount > 0) {
+      const failedTokens = response.responses
+        .map((resp, idx) => ({ resp, token: tokens[idx] }))
+        .filter(item => !item.resp.success)
+        .map(item => item.token);
+      
+      if (failedTokens.length > 0) {
+        await DeviceToken.deleteMany({ token: { $in: failedTokens } });
+        console.log(`Cleaned ${failedTokens.length} invalid tokens`);
+      }
+    }
 
   } catch (error) {
-    console.error('Push error:', error.message, error.stack);
+    console.error('Push error:', {
+      message: error.message,
+      code: error.code,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 
 };
