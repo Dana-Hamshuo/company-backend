@@ -34,57 +34,74 @@ exports.sendPushNotifications = async (userIds, title, meta = {}) => {
     }).select('token');
 
     if (!devices || devices.length === 0) {
-      console.log(' No valid device tokens found');
+      console.log('No valid device tokens found');
       return;
     }
 
     const messages = devices
-      .filter(d => d?.token?.trim())  // فلتر التوكن الفاضي
-      .map(device => ({
-        token: device.token.trim(),
-        
-        notification: {
-          title: title || 'Notification',
-          body: meta?.body || title || 'You have a new update',
-        },
-        
-        data: {  
-          ...meta,
-          type: meta?.type || 'general',
-          timestamp: new Date().toISOString()
-        },
-        
-        android: {
-          priority: 'high',
+      .filter(d => d?.token?.trim())
+      .map(device => {
+        const message = {
+          token: device.token.trim(),
           notification: {
-            channelId: 'default',
-            sound: 'default',
-            clickAction: 'FLUTTER_NOTIFICATION_CLICK'
+            title: title || 'Notification',
+            body: meta?.body || title || 'You have a new update',
+          },
+          data: {
+            ...meta,
+            type: meta?.type || 'general',
+            timestamp: new Date().toISOString()
           }
-        },
-        
-        apns: {
-          payload: {
-            aps: {
-              sound: 'default',
-              badge: 1,
-              category: 'TASK_NOTIFICATION'
-            }
-          }
-        }
-      }));
+        };
 
-    if (messages.length === 0) return;
+        if (device.deviceType === 'android') {
+          message.android = {
+            priority: 'high',
+            notification: {
+              channelId: 'default',
+              sound: 'default',
+              clickAction: 'FLUTTER_NOTIFICATION_CLICK'
+            }
+          };
+        }
+
+        if (device.deviceType === 'ios') {
+          message.apns = {
+            payload: {
+              aps: {
+                sound: 'default',
+                badge: 1,
+                category: 'TASK_NOTIFICATION'
+              }
+            }
+          };
+        }
+
+        return message;
+      });
+
+    if (messages.length === 0) {
+      console.log('No valid messages to send');
+      return;
+    }
+
+    console.log('Sending push with messages:', JSON.stringify(messages.slice(0, 1), null, 2));
+
+    if (!messaging || typeof messaging.sendEachForMulticast !== 'function') {
+      console.error('Firebase messaging not initialized');
+      return;
+    }
 
     const response = await messaging.sendEachForMulticast(messages);
     
-    console.log(` Push: ${response.successCount} ok, ${response.failureCount} failed`);
+    console.log(`Push: ${response.successCount} ok, ${response.failureCount} failed`);
     
     await this.cleanupInvalidTokens(response, devices);
 
   } catch (error) {
-    console.error(' Push error:', error.message);
+    console.error('Push error:', error.message, error.stack);
   }
+
 };
 
 exports.cleanupInvalidTokens = async (response, devices) => {
