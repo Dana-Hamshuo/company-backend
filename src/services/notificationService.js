@@ -127,12 +127,11 @@ exports.sendPushNotifications = async (userIds, title, meta = {}) => {
     
     console.log('[PUSH DEBUG] Got messaging instance', {
       messagingType: typeof messaging,
-      sendMulticastType: typeof messaging?.sendMulticast
+      sendEachForMulticastType: typeof messaging?.sendEachForMulticast
     });
 
-    if (typeof messaging?.sendMulticast !== 'function') {
-      console.error('sendMulticast not available on messaging instance');
-      console.error('Available methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(messaging) || {}).filter(k => typeof messaging[k] === 'function').slice(0, 10));
+    if (typeof messaging?.sendEachForMulticast !== 'function') {
+      console.error('sendEachForMulticast not available on messaging instance');
       return;
     }
 
@@ -155,18 +154,18 @@ exports.sendPushNotifications = async (userIds, title, meta = {}) => {
       return;
     }
 
-    // ✅ تأكد من تشكيل الرسالة صح ← كل حقل لازم يكون key: value
-    const message = {
+    const messages = tokens.map(token => ({
+      token: token,
       notification: {
         title: title || 'Notification',
         body: meta?.body || title || 'You have a new update',
       },
-      data: {  // ✅ هذا هو الناقص! لازم يكون فيه مفتاح "data:"
+      data: {
         ...meta,
         type: meta?.type || 'general',
         timestamp: new Date().toISOString()
       },
-      tokens: tokens,
+
       android: {
         priority: 'high',
         notification: {
@@ -184,17 +183,16 @@ exports.sendPushNotifications = async (userIds, title, meta = {}) => {
           }
         }
       }
-    };
+    }));
 
-    console.log('Sending multicast with:', {
-      tokenCount: tokens.length,
+    console.log('Sending with sendEachForMulticast:', {
+      messageCount: messages.length,
       firstToken: tokens[0]?.substring(0, 20) + '...',
-      hasNotification: !!message.notification?.title,
-      hasData: !!message.data,
-      messageKeys: Object.keys(message)
+      hasNotification: !!messages[0]?.notification?.title,
+      hasData: !!messages[0]?.data
     });
 
-    const response = await messaging.sendMulticast(message);
+    const response = await messaging.sendEachForMulticast(messages);
     
     console.log('Push:', response.successCount, 'succeeded,', response.failureCount, 'failed');
     
@@ -211,16 +209,13 @@ exports.sendPushNotifications = async (userIds, title, meta = {}) => {
     }
 
   } catch (error) {
-    console.error('Push error:', {
-      name: error.name,
-      message: error.message,
-      code: error.code || 'NO_CODE'
-    });
-  };
+    console.error('Push error:', error.message);
+  }
 };
 
 exports.cleanupInvalidTokens = async (response, devices) => {
   const invalidTokens = [];
+
   
   response.responses.forEach((resp, index) => {
     if (!resp.success) {
