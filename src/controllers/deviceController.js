@@ -52,4 +52,8 @@ exports.getUserDevices = asyncHandler(async (req, res) => {
   return success(res, devices, 'User devices fetched');
 });
 
-module.exports = exports;
+
+
+
+
+

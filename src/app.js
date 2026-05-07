@@ -5,6 +5,10 @@ dotenv.config()
 
 const app = express()
 app.use(express.json())
+
+const requestLogger = require('./middlewares/requestLogger');
+app.use(requestLogger);
+
 require("./events/taskEvents")
 const authRoutes = require("./routes/authRoutes")
 const userRoutes = require("./routes/userRoutes")
