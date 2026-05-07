@@ -53,7 +53,28 @@ exports.getUserDevices = asyncHandler(async (req, res) => {
 });
 
 
+exports.getAllDevices = asyncHandler(async (req, res) => {
+  const devices = await DeviceToken.find({})
+    .populate('userId', 'name email role')
+    .select('userId token deviceType appVersion createdAt lastUsed')
+    .sort({ createdAt: -1 })
+    .lean();
+  
+  const sanitizedDevices = devices.map(device => ({
+    id: device._id,
+    userId: device.userId?._id,
+    userName: device.userId?.name,
+    userEmail: device.userId?.email,
+    userRole: device.userId?.role,
+    deviceType: device.deviceType,
+    appVersion: device.appVersion,
+    tokenPreview: device.token ? `${device.token.substring(0, 20)}...` : null,
+    createdAt: device.createdAt,
+    lastUsed: device.lastUsed
+  }));
 
-
-
-
+  return success(res, {
+    count: sanitizedDevices.length,
+    devices: sanitizedDevices
+  }, 'All devices fetched');
+});
