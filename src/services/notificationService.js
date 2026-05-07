@@ -2,9 +2,12 @@ const Notification = require("../models/Notification");
 const DeviceToken = require("../models/DeviceToken");
 const AppError = require("../utils/AppError");
 
-const firebaseConfig = require("../config/firebase");
-const firebaseInitialized = firebaseConfig.initialized;
-const messaging = firebaseConfig.messaging;
+// const firebaseConfig = require("../config/firebase");
+// const firebaseInitialized = firebaseConfig.initialized;
+// const messaging = firebaseConfig.messaging;
+
+const { initialized: firebaseInitialized } = require("../config/firebase");
+const admin = require('firebase-admin');
 
 exports.notifyUsers = async (userIds, message, type, taskId, meta = {}) => {
   if (!userIds || userIds.length === 0) return;
@@ -103,18 +106,33 @@ exports.notifyUsers = async (userIds, message, type, taskId, meta = {}) => {
 //   }
 
 // };
+
 exports.sendPushNotifications = async (userIds, title, meta = {}) => {
   try {
+    const admin = require('firebase-admin');
+    const { initialized: firebaseInitialized } = require('../config/firebase');
+    
     console.log('[PUSH DEBUG] Starting sendPushNotifications', {
       firebaseInitialized,
-      messagingExists: !!messaging,
-      messagingType: typeof messaging,
-      sendMulticastType: typeof messaging?.sendMulticast,
+      adminExists: !!admin,
       userIdsCount: userIds?.length
     });
 
-    if (!firebaseInitialized || !messaging) {
+    if (!firebaseInitialized || !admin) {
       console.error('Firebase not initialized - skipping push');
+      return;
+    }
+
+    const messaging = admin.messaging();
+    
+    console.log('[PUSH DEBUG] Got messaging instance', {
+      messagingType: typeof messaging,
+      sendMulticastType: typeof messaging?.sendMulticast
+    });
+
+    if (typeof messaging?.sendMulticast !== 'function') {
+      console.error('sendMulticast not available on messaging instance');
+      console.error('Available methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(messaging) || {}).filter(k => typeof messaging[k] === 'function').slice(0, 10));
       return;
     }
 
@@ -137,12 +155,13 @@ exports.sendPushNotifications = async (userIds, title, meta = {}) => {
       return;
     }
 
+    // ✅ تأكد من تشكيل الرسالة صح ← كل حقل لازم يكون key: value
     const message = {
       notification: {
         title: title || 'Notification',
         body: meta?.body || title || 'You have a new update',
       },
-      data: {
+      data: {  // ✅ هذا هو الناقص! لازم يكون فيه مفتاح "data:"
         ...meta,
         type: meta?.type || 'general',
         timestamp: new Date().toISOString()
@@ -171,21 +190,15 @@ exports.sendPushNotifications = async (userIds, title, meta = {}) => {
       tokenCount: tokens.length,
       firstToken: tokens[0]?.substring(0, 20) + '...',
       hasNotification: !!message.notification?.title,
-      hasData: !!message.data
+      hasData: !!message.data,
+      messageKeys: Object.keys(message)
     });
 
     const response = await messaging.sendMulticast(message);
-
-    console.log('[PUSH DEBUG] About to call sendMulticast', {
-      messageType: typeof message,
-      tokenCount: message.tokens?.length,
-      messagingType: typeof messaging,
-      sendMulticastType: typeof messaging?.sendMulticast
-    });
     
-    console.log(`Push: ${response.successCount} succeeded, ${response.failureCount} failed`);
+    console.log('Push:', response.successCount, 'succeeded,', response.failureCount, 'failed');
     
-    if (response.failureCount > 0) {
+    if (response.failureCount > 0 && response.responses) {
       const failedTokens = response.responses
         .map((resp, idx) => ({ resp, token: tokens[idx] }))
         .filter(item => !item.resp.success)
@@ -193,20 +206,17 @@ exports.sendPushNotifications = async (userIds, title, meta = {}) => {
       
       if (failedTokens.length > 0) {
         await DeviceToken.deleteMany({ token: { $in: failedTokens } });
-        console.log(`Cleaned ${failedTokens.length} invalid tokens`);
+        console.log('Cleaned', failedTokens.length, 'invalid tokens');
       }
     }
 
   } catch (error) {
-    console.error('[PUSH ERROR] Unhandled error:', {
+    console.error('Push error:', {
       name: error.name,
       message: error.message,
-      code: error.code,
-      type: typeof error,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      code: error.code || 'NO_CODE'
     });
-  }
-
+  };
 };
 
 exports.cleanupInvalidTokens = async (response, devices) => {
