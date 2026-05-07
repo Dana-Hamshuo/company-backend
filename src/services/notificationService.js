@@ -161,8 +161,9 @@ exports.sendPushNotifications = async (userIds, title, meta = {}) => {
         body: meta?.body || title || 'You have a new update',
       },
       data: {
-        ...meta,
-        type: meta?.type || 'general',
+        type: String(meta?.type || 'general'),
+        taskId: String(meta?.taskId || ''),
+        reason: String(meta?.reason || ''),
         timestamp: new Date().toISOString()
       },
 
@@ -185,14 +186,14 @@ exports.sendPushNotifications = async (userIds, title, meta = {}) => {
       }
     }));
 
-    console.log('Sending with sendEachForMulticast:', {
+    console.log('Sending with sendEach:', {
       messageCount: messages.length,
       firstToken: tokens[0]?.substring(0, 20) + '...',
       hasNotification: !!messages[0]?.notification?.title,
       hasData: !!messages[0]?.data
     });
 
-    const response = await messaging.sendEachForMulticast(messages);
+    const response = await messaging.sendEach(messages);
     
     console.log('Push:', response.successCount, 'succeeded,', response.failureCount, 'failed');
     
