@@ -243,7 +243,7 @@ exports.chunkArray = (array, size) => {
 exports.notifyTaskCreated = async (task) => {
   const userIds = task.assignedUsers.map(u => u.userId);
   const schedule = task.schedule[0];
-  const body = `تم إنشاء مهمة جديدة لك: "${task.title}"\nتبدأ: ${schedule.date} الساعة ${schedule.startTime}`;
+  const body = `تم إنشاء مهمة جديدة لك: "${task.title}"\nتبدأ: ${formatDate} الساعة ${schedule.startTime}`;
   
   await exports.notifyUsers(
     userIds,
@@ -290,7 +290,7 @@ exports.notifyTaskDelayed = async (task) => {
   const userIds = task.assignedUsers.map(u => u.userId);
   const schedule = task.schedule[0];
   const reason = task.delayReason || 'لم يتم تحديد سبب';
-  const body = `تم تأجيل المهمة: "${task.title}"\nالسبب: ${reason}\nالوقت الجديد: ${schedule.date} الساعة ${schedule.startTime}`;
+  const body = `تم تأجيل المهمة: "${task.title}"\nالسبب: ${reason}\nالوقت الجديد: ${formatDate} الساعة ${schedule.startTime}`;
   
   await exports.notifyUsers(
     userIds,
@@ -313,8 +313,7 @@ exports.notifyDependencyReady = async (task) => {
   const userIds = task.assignedUsers.map(u => u.userId.toString());
   const schedule = task.schedule?.[0];
   const timeText = schedule ? `تبدأ: ${schedule.date} الساعة ${schedule.startTime}` : 'يمكنك البدء الآن';
-  const body = `تم إنجاز المهام المعتمد عليها!\nمهمتك "${task.title}" جاهزة للبدء.\n${timeText}`;
-  
+  const body = `انتهت المهام السابقة!\nمهمتك "${task.title}" أصبحت جاهزة للبدء.\n ${formatDate} الساعة ${schedule.startTime}`;
   await exports.notifyUsers(
     userIds,
     "جاهزة للبدء",
@@ -333,7 +332,7 @@ exports.notifyDependencyReady = async (task) => {
 
 exports.notifyTaskReminder = async (task, userIds) => {
   const schedule = task.schedule[0];
-  const body = `تذكير بالمهمة!\n"${task.title}" تبدأ بعد 30 دقيقة (الساعة ${schedule.startTime}).\nتأكد من جاهزيتك للبدء.`;
+  const body = `المهمة "${task.title}" تبدأ بعد نصف ساعة (الساعة ${formatDate})`;
   
   await exports.notifyUsers(
     userIds,
@@ -348,6 +347,24 @@ exports.notifyTaskReminder = async (task, userIds) => {
       startTime: schedule.startTime
     }
   );
+};
+
+const formatTime = (timeString) => {
+  if (!timeString) return '';
+  const [hours, minutes] = timeString.split(':').map(Number);
+  const period = hours >= 12 ? 'م' : 'ص';
+  const formattedHours = hours % 12 || 12;
+  const formattedMinutes = String(minutes).padStart(2, '0');
+  return `${formattedHours}:${formattedMinutes} ${period}`;
+};
+
+const formatDate = (dateString) => {
+  return new Date(dateString).toLocaleDateString('ar-SY', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long'
+  });
 };
 
 module.exports = exports;
