@@ -50,6 +50,11 @@ const taskSchema = new mongoose.Schema({
 
   delayReason:String,
 
+  reminders: [{
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    type: { type: String, enum: ['30min_before', '1hour_before'] },
+    sentAt: { type: Date, default: Date.now }
+  }],
 
   progress: {
     type: Number,

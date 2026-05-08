@@ -385,3 +385,26 @@ async function cascadeDelayTask(taskId, reason, custom, session) {
     session.endSession();
   }
 };
+
+exports.checkAndNotifyDependencies = async (completedTaskId) => {
+  const dependentTasks = await Task.find({
+    "dependencies.taskId": new mongoose.Types.ObjectId(completedTaskId),
+    status: { $in: ["pending", "blocked", "waiting"] }
+  }).populate("assignedUsers.userId", "name");
+
+  for (const depTask of dependentTasks) {
+    const allDependenciesDone = depTask.dependencies.every(dep => dep.status === "done");
+
+    if (allDependenciesDone) {
+      if (depTask.status === "blocked" || depTask.status === "waiting") {
+        depTask.status = "pending";
+        await depTask.save();
+      }
+
+      const eventBus = require("../events/eventBus");
+      eventBus.emit("dependency.ready", depTask);
+      
+      console.log(`Task ${depTask._id} is now ready. Notification sent.`);
+    }
+  }
+};

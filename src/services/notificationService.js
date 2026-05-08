@@ -240,68 +240,112 @@ exports.chunkArray = (array, size) => {
   }
   return chunks;
 };
-
 exports.notifyTaskCreated = async (task) => {
   const userIds = task.assignedUsers.map(u => u.userId);
+  const schedule = task.schedule[0];
+  const body = `تم إنشاء مهمة جديدة لك: "${task.title}"\nتبدأ: ${schedule.date} الساعة ${schedule.startTime}`;
   
   await exports.notifyUsers(
     userIds,
-    "Task assigned",
+    "مهمة جديدة",
     "new_task",
     task._id,
     { 
-      body: "You have been assigned to a new task by the scheduler",
+      body: body,
       taskId: task._id.toString(),
-      type: "new_task"
+      type: "new_task",
+      taskTitle: task.title,
+      startTime: schedule.startTime,
+      startDate: schedule.date
     }
   );
 };
 
-exports.notifyTaskCompleted = async (task) => {
+exports.notifyTaskUpdated = async (task, updatedFields) => {
   const userIds = task.assignedUsers.map(u => u.userId);
+  const schedule = task.schedule[0];
+  let changes = '';
+  if (updatedFields.title) changes += `العنوان: ${updatedFields.title}\n`;
+  if (updatedFields.status) changes += `الحالة: ${updatedFields.status}\n`;
+  if (updatedFields.schedule) changes += `الوقت: ${schedule.date} ${schedule.startTime}\n`;
+  const body = `تم تعديل المهمة: "${task.title}"\n${changes || 'تم تحديث بعض التفاصيل'}`;
   
   await exports.notifyUsers(
     userIds,
-    "Status changed",
-    "task_update",
+    "تم تعديل المهمة",
+    "task_updated",
     task._id,
     { 
-      body: "The task assigned to you has been completed",
+      body: body,
       taskId: task._id.toString(),
-      type: "task_update"
+      type: "task_updated",
+      taskTitle: task.title,
+      startTime: schedule.startTime,
+      startDate: schedule.date
     }
   );
 };
 
 exports.notifyTaskDelayed = async (task) => {
   const userIds = task.assignedUsers.map(u => u.userId);
+  const schedule = task.schedule[0];
+  const reason = task.delayReason || 'لم يتم تحديد سبب';
+  const body = `تم تأجيل المهمة: "${task.title}"\nالسبب: ${reason}\nالوقت الجديد: ${schedule.date} الساعة ${schedule.startTime}`;
   
   await exports.notifyUsers(
     userIds,
-    "Task delayed",
-    "delay",
+    "تم تأجيل المهمة",
+    "task_delayed",
     task._id,
     { 
-      body: task.delayReason || "The task has been delayed",
-      reason: task.delayReason,
+      body: body,
+      reason: reason,
       taskId: task._id.toString(),
-      type: "delay"
+      type: "task_delayed",
+      taskTitle: task.title,
+      startTime: schedule.startTime,
+      startDate: schedule.date
     }
   );
 };
 
 exports.notifyDependencyReady = async (task) => {
   const userIds = task.assignedUsers.map(u => u.userId.toString());
+  const schedule = task.schedule?.[0];
+  const timeText = schedule ? `تبدأ: ${schedule.date} الساعة ${schedule.startTime}` : 'يمكنك البدء الآن';
+  const body = `تم إنجاز المهام المعتمد عليها!\nمهمتك "${task.title}" جاهزة للبدء.\n${timeText}`;
   
   await exports.notifyUsers(
     userIds,
-    "Dependency resolved",
-    "dependency",
+    "جاهزة للبدء",
+    "dependency_ready",
     task._id,
     { 
-      body: "Previous tasks are completed, you can start now",
+      body: body,
       taskId: task._id.toString(),
-      type: "dependency"
+      type: "dependency_ready",
+      taskTitle: task.title,
+      startTime: schedule?.startTime,
+      startDate: schedule?.date
+    }
+  );
+};
+
+exports.notifyTaskReminder = async (task, userIds) => {
+  const schedule = task.schedule[0];
+  const body = `تذكير بالمهمة!\n"${task.title}" تبدأ بعد 30 دقيقة (الساعة ${schedule.startTime}).\nتأكد من جاهزيتك للبدء.`;
+  
+  await exports.notifyUsers(
+    userIds,
+    "تذكير قبل 30 دقيقة",
+    "task_reminder",
+    task._id,
+    { 
+      body: body,
+      taskId: task._id.toString(),
+      type: "task_reminder",
+      taskTitle: task.title,
+      startTime: schedule.startTime
     }
   );
 };

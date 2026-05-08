@@ -13,7 +13,9 @@ exports.checkUserConflict = async(
   session = null
 )=>{
 
-  
+  if (user.allowOverlap === true) {
+    return false;
+  }
 
   const query = {
     "assignedUsers.userId": user._id,
@@ -28,47 +30,36 @@ exports.checkUserConflict = async(
   if (session) {
     tasksQuery = tasksQuery.session(session);
   }
+
   const tasks = await tasksQuery;
 
-  let overlaps = 0;
+
   const targetDate = toDateKey(date);
 
- for(const task of tasks){
-
+  for(const task of tasks){
   
-  if(excludeTaskId && task._id.equals(excludeTaskId)) continue
+    if(excludeTaskId && task._id.equals(excludeTaskId)) continue
 
+    if(!task.schedule || task.schedule.length === 0) continue
 
-  if(!task.schedule || task.schedule.length === 0) continue
+    for(const day of task.schedule){
 
-  for(const day of task.schedule){
+      const taskDate = toDateKey(day.date)
+ 
+      if(taskDate !== targetDate) continue
+  
+      const timeOverlap = isOverlap(
+        startTime,
+        endTime,
+        day.startTime,
+        day.endTime
+      )
 
-    const taskDate = toDateKey(day.date)
-
-   if(taskDate !== targetDate) continue
-
-   const timeOverlap = isOverlap(
-    startTime,
-    endTime,
-    day.startTime,
-    day.endTime
-   )
-
-   if(timeOverlap){
-    overlaps++
-   }
-
+      if(timeOverlap){
+        return true;
+      }
+    }
   }
 
- }
-
- if(!user.allowOverlap && overlaps > 0){
-  return true
- }
-
- if(overlaps >= user.maxParallelTasks){
-  return true
- }
-
- return false
+  return false;
 }

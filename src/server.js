@@ -6,6 +6,11 @@ require("dotenv").config()
 
 const connectDB = require("./config/db")
 
+process.env.TZ = process.env.TIMEZONE || 'Asia/Damascus';
+
+const { start } = require('./jobs/taskReminderJob');
+start();
+
 const startServer = async () => {
   try {
     await connectDB()
@@ -21,5 +26,6 @@ const startServer = async () => {
     process.exit(1)
   }
 }
+
 
 startServer()
