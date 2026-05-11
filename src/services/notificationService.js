@@ -273,12 +273,12 @@ exports.notifyTaskUpdated = async (task, updatedFields) => {
   await exports.notifyUsers(
     userIds,
     "تم تعديل المهمة",
-    "task_updated",
+    "task_update",
     task._id,
     { 
       body: body,
       taskId: task._id.toString(),
-      type: "task_updated",
+      type: "task_update",
       taskTitle: task.title,
       startTime: schedule.startTime,
       startDate: schedule.date
@@ -296,13 +296,13 @@ exports.notifyTaskDelayed = async (task) => {
   await exports.notifyUsers(
     userIds,
     "تم تأجيل المهمة",
-    "task_delayed",
+    "delay",
     task._id,
     { 
       body: body,
       reason: reason,
       taskId: task._id.toString(),
-      type: "task_delayed",
+      type: "delay",
       taskTitle: task.title,
       startTime: schedule.startTime,
       startDate: schedule.date
@@ -320,12 +320,12 @@ exports.notifyDependencyReady = async (task) => {
   await exports.notifyUsers(
     userIds,
     "جاهزة للبدء",
-    "dependency_ready",
+    "dependency",
     task._id,
     { 
       body: body,
       taskId: task._id.toString(),
-      type: "dependency_ready",
+      type: "dependency",
       taskTitle: task.title,
       startTime: schedule?.startTime,
       startDate: schedule?.date
@@ -341,12 +341,12 @@ exports.notifyTaskReminder = async (task, userIds) => {
   await exports.notifyUsers(
     userIds,
     "تذكير قبل 30 دقيقة",
-    "task_reminder",
+    "task_update",
     task._id,
     { 
       body: body,
       taskId: task._id.toString(),
-      type: "task_reminder",
+      type: "task_update",
       taskTitle: task.title,
       startTime: schedule.startTime
     }
