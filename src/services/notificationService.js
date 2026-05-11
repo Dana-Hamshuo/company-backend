@@ -290,7 +290,8 @@ exports.notifyTaskDelayed = async (task) => {
   const userIds = task.assignedUsers.map(u => u.userId);
   const schedule = task.schedule[0];
   const reason = task.delayReason || 'لم يتم تحديد سبب';
-  const body = `تم تأجيل المهمة: "${task.title}"\nالسبب: ${reason}\nالوقت الجديد: ${formatDate} الساعة ${schedule.startTime}`;
+  // const body = `تم تأجيل المهمة: "${task.title}"\nالسبب: ${reason}\nالوقت الجديد: ${formatDate} الساعة ${schedule.startTime}`;
+  const body = `تم تأجيل المهمة: "${task.title}"\nالسبب: ${reason}`;
   
   await exports.notifyUsers(
     userIds,
@@ -313,7 +314,9 @@ exports.notifyDependencyReady = async (task) => {
   const userIds = task.assignedUsers.map(u => u.userId.toString());
   const schedule = task.schedule?.[0];
   const timeText = schedule ? `تبدأ: ${schedule.date} الساعة ${schedule.startTime}` : 'يمكنك البدء الآن';
-  const body = `انتهت المهام السابقة!\nمهمتك "${task.title}" أصبحت جاهزة للبدء.\n ${formatDate} الساعة ${schedule.startTime}`;
+  // const body = `انتهت المهام السابقة!\nمهمتك "${task.title}" أصبحت جاهزة للبدء.\n ${formatDate} الساعة ${schedule.startTime}`;
+  const body = `انتهت المهام السابقة!\nمهمتك "${task.title}" أصبحت جاهزة للبدء`;
+  
   await exports.notifyUsers(
     userIds,
     "جاهزة للبدء",
@@ -332,7 +335,8 @@ exports.notifyDependencyReady = async (task) => {
 
 exports.notifyTaskReminder = async (task, userIds) => {
   const schedule = task.schedule[0];
-  const body = `المهمة "${task.title}" تبدأ بعد نصف ساعة (الساعة ${formatDate})`;
+  // const body = `المهمة "${task.title}" تبدأ بعد نصف ساعة (الساعة ${formatDate})`;
+  const body = `المهمة "${task.title}" تبدأ بعد نصف ساعة`;
   
   await exports.notifyUsers(
     userIds,
