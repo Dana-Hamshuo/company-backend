@@ -243,7 +243,7 @@ exports.chunkArray = (array, size) => {
 exports.notifyTaskCreated = async (task) => {
   const userIds = task.assignedUsers.map(u => u.userId);
   const schedule = task.schedule[0];
-  const body = `تم إنشاء مهمة جديدة لك: "${task.title}"\nتبدأ: ${formatDate} الساعة ${schedule.startTime}`;
+  const body = `تم إنشاء مهمة جديدة لك`;
   
   await exports.notifyUsers(
     userIds,
