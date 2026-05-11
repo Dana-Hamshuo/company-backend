@@ -5,17 +5,17 @@ eventBus.on("task.created", async(task)=>{
   await notificationService.notifyTaskCreated(task)
 }) 
 
-eventBus.on("task.updated", async(task, updatedFields)=>{
-  await notificationService.notifyTaskUpdated(task, updatedFields)
-})
+// eventBus.on("task.updated", async(task, updatedFields)=>{
+//   await notificationService.notifyTaskUpdated(task, updatedFields)
+// })
 
 eventBus.on("task.delayed", async(task)=>{
   await notificationService.notifyTaskDelayed(task)
 })
 
-eventBus.on("task.completed", async(task)=>{
-  await notificationService.notifyTaskCompleted(task)
-})
+// eventBus.on("task.completed", async(task)=>{
+//   await notificationService.notifyTaskCompleted(task)
+// })
 
 eventBus.on("dependency.ready", async (task) => {
   await notificationService.notifyDependencyReady(task)

@@ -31,6 +31,7 @@ const assertTaskIsModifiable = (task) => {
     );
   }
 };
+
 const normalizeDependencies = (deps) => {
   if (!deps || !Array.isArray(deps)) return [];
   return deps.map(dep => {
@@ -138,17 +139,15 @@ exports.completeTask = async(taskId)=>{
    
     await task.save()
    
-    eventBus.emit("task.completed", task)
+    // eventBus.emit("task.completed", task)
 
     await dependencyEngine.updateDependentTasks(taskId, validDeps);
        
     return task
    
-   }
+}
 
-
-
-   exports.deleteTask = async (taskId) => {
+exports.deleteTask = async (taskId) => {
     if (!mongoose.Types.ObjectId.isValid(taskId)) {
       throw new AppError("Invalid task ID", 400, "VALIDATION_ERROR", "id");
     }
@@ -176,9 +175,9 @@ exports.completeTask = async(taskId)=>{
     await Task.findByIdAndDelete(taskId);
     
     return { success: true, message: "Task deleted" };
-  };
+};
 
-  exports.markTaskDelayed = async(taskId, reason, custom = {},user)=>{
+exports.markTaskDelayed = async(taskId, reason, custom = {},user)=>{
 
 
     const session = await mongoose.startSession();
@@ -249,6 +248,7 @@ exports.completeTask = async(taskId)=>{
     session.endSession();
   }
 };
+
 async function checkConflictsForTask(task, newSchedule, session) {
   const conflicts = [];
 
@@ -316,7 +316,8 @@ async function cascadeDelayTask(taskId, reason, custom, session) {
   await task.save({ session });
   eventBus.emit("task.delayed", task);
 }
-   exports.updateTaskSafe = async(taskId, data)=>{
+
+exports.updateTaskSafe = async(taskId, data)=>{
  
 
     const session = await mongoose.startSession();
@@ -400,8 +401,7 @@ exports.checkAndNotifyDependencies = async (completedTaskId) => {
         depTask.status = "pending";
         await depTask.save();
       }
-
-      const eventBus = require("../events/eventBus");
+      
       eventBus.emit("dependency.ready", depTask);
       
       console.log(`Task ${depTask._id} is now ready. Notification sent.`);
