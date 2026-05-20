@@ -16,6 +16,11 @@ exports.getUsers = asyncHandler(async (req, res) => {
 
   const currentUserEmail = req.user?.email?.toLowerCase() || '';
 
+  console.log('=== GET USERS DEBUG ===');
+  console.log('Current User Email:', currentUserEmail);
+  console.log('...', ['admin@admin.com', 'admin2@admin.com'].includes(currentUserEmail));
+
+
   const allowedTestAdmins = [
     'admin@admin.com',
     'admin2@admin.com'
